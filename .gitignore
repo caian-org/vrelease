@@ -1,0 +1,11 @@
+# binaries for programs and plugins
+main
+vrelease
+*.exe
+*.exe~
+*.so
+*.dylib
+*.dll
+
+# script generated
+meta.v
