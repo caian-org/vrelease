@@ -22,6 +22,7 @@
 
 module main
 
+import os
 import term
 import time
 import net.http { Method, Request }
@@ -30,17 +31,38 @@ fn info(txt string) {
 	print(term.bright_blue('=> ') + txt + '\n')
 }
 
+fn errmsg(txt string) string {
+	return term.bold(term.bright_red('ERROR: ')) + txt
+}
+
 fn start_msg() {
 	program_version, target_arch, target_kernel := metad()
+
 	println('')
 	println(term.bold('vrelease $program_version $target_kernel/$target_arch'))
 	println(term.gray('program has started @ ${time.now().str()}'))
 	println('')
 }
 
+fn get_token() ?string {
+	key := 'VRELEASE_GITHUB_TOKEN'
+	env := os.environ()
+
+	if key in env {
+		return env[key]
+	}
+
+	panic(errmsg('environment variable $key is undefined'))
+}
+
 fn main() {
 	start_msg()
-	info('doing stuff')
+
+	gh_token := get_token() or {
+		panic(err.msg)
+	}
+
+	info('got $gh_token')
 
 	req := Request{
 		method: Method.get,
