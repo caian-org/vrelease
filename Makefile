@@ -1,7 +1,13 @@
 .DEFAULT_GOAL := build
 
+VC = v
+VFLAGS =
+
 build:
 	@echo writing meta
-	@v run util/write-meta.v
+	@$(VC) run util/write-meta.v
 	@echo compiling
-	@v -prod .
+	@$(VC) $(VFLAGS) .
+
+build-release: VFLAGS += -prod
+build-release: build
