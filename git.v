@@ -24,14 +24,9 @@ module main
 
 import os
 import json
-import term
-import time
 import encoding.base64
 
-import cli { Command, Flag }
 import net.http { Method, Request, Response }
-
-/* data structures */
 
 enum Protocol {
 	http
@@ -56,38 +51,7 @@ struct ReleaseBody {
 	prerelease       bool   [required]
 }
 
-/* utils */
-
-fn emph(txt string) string {
-	return term.green(txt)
-}
-
-fn info(txt string) {
-	print(term.bright_blue('=> ') + txt + '\n')
-}
-
-fn errmsg(txt string) string {
-	return term.bold(term.bright_red('ERROR: ')) + txt
-}
-
-/* running "phases" */
-
-fn start_msg(now time.Time, md map[string]string) {
-	println('')
-	println(term.bold("${md['program_name']} ${md['program_version']} ${md['target_kernel']}/${md['target_arch']}"))
-	println(term.gray('program has started @ ${now.str()}'))
-	println('')
-}
-
-fn get_token() ?string {
-	key := 'VRELEASE_GITHUB_TOKEN'
-	env := os.environ()
-
-	if key in env { return env[key] }
-	panic(errmsg('environment variable $key is undefined'))
-}
-
-fn get_remote_info() ?GitRemote {
+pub fn get_remote_info() ?GitRemote {
 	res := os.execute_or_panic('git remote get-url --all origin')
 	out := res.output.trim_space().split('\n')
 	uri := out[0]
@@ -132,7 +96,7 @@ fn get_remote_info() ?GitRemote {
 	return GitRemote{protocol, uri, user, repo}
 }
 
-fn get_repo_changelog(user string, repo string) ?map[string]string {
+pub fn get_repo_changelog(user string, repo string) ?map[string]string {
 	nt := errmsg('no tags found')
 
 	mut res := os.execute_or_panic('git tag --sort=committerdate')
@@ -171,7 +135,7 @@ fn get_repo_changelog(user string, repo string) ?map[string]string {
 	return map{ 'content': changelog, 'tag': last_ref }
 }
 
-fn create_release(remote GitRemote, token string, changelog map[string]string) ?Response {
+pub fn create_release(remote GitRemote, token string, changelog map[string]string) ?Response {
 	payload := ReleaseBody{
         target_commitish: 'master'
         tag_name:         changelog['tag']
@@ -193,109 +157,4 @@ fn create_release(remote GitRemote, token string, changelog map[string]string) ?
 
 	res := req.do() or { panic(errmsg('error while making request; got "$err.msg"')) }
 	return res
-}
-
-struct Cli {
-pub mut:
-	cmd Command
-}
-
-fn (mut c Cli) is_set(flag string) bool {
-	return c.cmd.flags.get_bool(flag) or { false }
-}
-
-fn (mut c Cli) act() {
-	c.cmd.setup()
-	c.cmd.parse(os.args)
-
-	if c.is_set('help') {
-		c.cmd.execute_help()
-		exit(0)
-	}
-
-	if c.is_set('version') {
-		println(c.cmd.version)
-		exit(0)
-	}
-}
-
-fn build_cli(md map[string]string) Cli {
-	mut cmd := Command{
-		name:            md['program_name']
-		description:     md['program_description']
-		version:         md['program_version']
-		disable_help:    true
-		disable_version: true
-	}
-
-	cmd.add_flag(Flag{
-		flag:        .bool
-		name:        'debug'
-		abbrev:      'd'
-		description: 'enables the debug mode'
-	})
-
-	cmd.add_flag(Flag{
-		flag:        .bool
-		name:        'no-color'
-		abbrev:      'n'
-		description: 'disables output with colors (useful on non-compliant shells)'
-	})
-
-	cmd.add_flag(Flag{
-		flag:        .string
-		name:        'attach'
-		abbrev:      'a'
-		description: 'attaches (uploads) a file to the release'
-	})
-
-	cmd.add_flag(Flag{
-		flag:          .int
-		name:          'limit'
-		abbrev:        'l'
-		default_value: ['-1']
-		description:   'sets a limit to the amount of commits on the changelog'
-	})
-
-	cmd.add_flag(Flag{
-		flag:        .bool
-		name:        'help'
-		abbrev:      'h'
-		description: 'prints help information'
-	})
-
-	cmd.add_flag(Flag{
-		flag:        .bool
-		name:        'version'
-		abbrev:      'v'
-		description: 'prints version information'
-	})
-
-	return Cli{ cmd }
-}
-
-fn main() {
-	meta_d := get_meta_d()
-
-	mut cli := build_cli(meta_d)
-	cli.act()
-
-	started_at := time.now()
-	start_msg(started_at, meta_d)
-
-	gh_token := get_token() or { panic(err.msg) }
-	remote := get_remote_info() or { panic(err.msg) }
-
-	info('executing on repository ${emph(remote.repo)} of user ${emph(remote.user)}')
-	changelog := get_repo_changelog(remote.user, remote.repo) or { panic(err.msg) }
-
-	info('creating release')
-	release_res := create_release(remote, gh_token, changelog) or { panic(err.msg) }
-
-	if release_res.status_code != 201 {
-		panic(errmsg('failed with code $release_res.status_code; << $release_res.text >>'))
-	}
-
-	duration := time.now() - started_at
-	info('done; took ${emph(duration.milliseconds().str() + "ms")}')
 }
