@@ -158,11 +158,20 @@ fn (mut g Git) get_repo_changelog() ? {
 		sha := log[0 .. 40]
 		msg := log[41 .. log.len]
 
-		commit_url := 'https://github.com/${g.remote.user}/${g.remote.repo}/commit'
+		commit_url := 'https://github.com/$g.remote.user/$g.remote.repo/commit'
 		changelog += '<li><a href="$commit_url/$sha"><code>${sha[0 .. 7]}</code></a> $msg</li>'
 	}
 
-	changelog = '<h1>Changelog</h1><ul>$changelog</ul>'
+	mut ommited_commit_msg := ''
+	omitted_commits := logs.len - limit
+	if omitted_commits > 0 {
+		ommited_commit_msg = '<i>$omitted_commits commits were ommited from this list</i><br><br>'
+	}
+
+	changelog = '<h1>Changelog</h1>'
+		+ ommited_commit_msg
+		+ '<ul>$changelog</ul>'
+
 	g.pp.debug('generated_changelog = \n$changelog')
 	g.changelog = map{ 'content': changelog, 'tag': last_ref }
 }
@@ -171,15 +180,15 @@ fn (g Git) create_release(token string) ?Response {
 	g.pp.info('creating release')
 
 	payload := ReleaseBody{
-        target_commitish: 'master'
-        tag_name:         g.changelog['tag']
-        name:             g.changelog['tag']
-        body:             g.changelog['content']
-        draft:            false
-        prerelease:       false
+		target_commitish: 'master'
+		tag_name:   g.changelog['tag']
+		name:       g.changelog['tag']
+		body:       g.changelog['content']
+		draft:      false
+		prerelease: false
 	}
 
-	url := 'https://api.github.com/repos/${g.remote.user}/${g.remote.repo}/releases'
+	url := 'https://api.github.com/repos/$g.remote.user/$g.remote.repo/releases'
 	data := json.encode(payload)
 
 	g.pp.debug('git_api_url = $url')
@@ -191,7 +200,7 @@ fn (g Git) create_release(token string) ?Response {
 		data:   data
 	}
 
-	auth_h_v := 'Basic ' + base64.encode_str('${g.remote.user}:$token')
+	auth_h_v := 'Basic ' + base64.encode_str('$g.remote.user:$token')
 	req.add_header('Accept', 'application/vnd.github.v3+json')
 	req.add_header('Authorization', auth_h_v)
 
