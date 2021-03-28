@@ -27,7 +27,7 @@ matrix:
 
 before_install:
   - time sh .ci/install-v.sh
-  - time v self -prod
+  - time v up
 
 install:
   - time make build-release
