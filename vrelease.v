@@ -18,14 +18,18 @@
 
 	For more information, please see
 	<http://creativecommons.org/publicdomain/zero/1.0/>
- */
+*/
 
 module main
 
 import os
 import term
 import time
+import encoding.base64
+
 import net.http { Method, Request }
+
+/* data structures */
 
 enum Protocol {
 	http
@@ -35,10 +39,13 @@ enum Protocol {
 
 struct GitRemote {
 	protocol Protocol [required]
-	uri      string   [required]
-	user     string   [required]
-	project  string   [required]
+
+	uri  string [required]
+	user string [required]
+	repo string [required]
 }
+
+/* utils */
 
 fn info(txt string) {
 	print(term.bright_blue('=> ') + txt + '\n')
@@ -48,12 +55,15 @@ fn errmsg(txt string) string {
 	return term.bold(term.bright_red('ERROR: ')) + txt
 }
 
+/* running "phases" */
+
 fn start_msg() {
+	now_ts := time.now().str()
 	program_version, target_arch, target_kernel := metad()
 
 	println('')
 	println(term.bold('vrelease $program_version $target_kernel/$target_arch'))
-	println(term.gray('program has started @ ${time.now().str()}'))
+	println(term.gray('program has started @ ${now_ts}'))
 	println('')
 }
 
@@ -82,10 +92,17 @@ fn get_remote_info() ?GitRemote {
 	}
 
 	xtract := fn (p Protocol, uri string) (string, string) {
-		mf := errmsg('malformed SSH URI')
+		mf := errmsg('malformed remote git URI; got "$uri"')
+
+		if !uri.contains('/') {
+			panic(mf)
+		}
+
+		mut user := ''
+		mut repo := ''
 
 		if p == Protocol.ssh {
-			if !(uri.contains(':') && uri.contains('/')) {
+			if !uri.contains(':') {
 				panic(mf)
 			}
 
@@ -99,39 +116,45 @@ fn get_remote_info() ?GitRemote {
 				panic(mf)
 			}
 
-			user := segs[0]
-			repo := segs[1]
+			user = segs[0]
+			repo = segs[1]
 
-			return user, repo[0 .. repo.len - 4] // removes ".git" from the repo name
+		}
+		else {
+			segs := uri.split('/')
+			if segs.len != 5 {
+				panic(mf)
+			}
+
+			user = segs[3]
+			repo = segs[4]
 		}
 
-		return '', ''
+		return user, repo[0 .. repo.len - 4] // removes ".git" from the repo name
 	}
 
-	user, project := xtract(protocol, uri)
-
-	return GitRemote{protocol, uri, user, project}
+	user, repo := xtract(protocol, uri)
+	return GitRemote{protocol, uri, user, repo}
 }
 
 fn main() {
+	emph := fn(m string) string { return term.green(m) }
+
 	start_msg()
 
-	gh_token := get_token() or {
-		panic(err.msg)
-	}
+	gh_token := get_token() or { panic(err.msg) }
+	remote := get_remote_info() or { panic(err.msg) }
 
-	info('got $gh_token')
+	info('executing on project "${emph(remote.repo)}" of account "${emph(remote.user)}"')
+	auth_h_v := 'Basic ' + base64.encode_str('$remote.user:$gh_token')
 
-	remote := get_remote_info() or {
-		panic(errmsg('could not fetch url from origin; got "$err.msg"'))
-	}
-
-	println(remote)
-
-	req := Request{
+	mut req := Request{
 		method: Method.get,
-		url: 'https://api.github.com/repos/$remote.user/$remote.project/releases'
+		url: 'https://api.github.com/repos/$remote.user/$remote.repo/releases'
 	}
+
+	req.add_header('Accept', 'application/vnd.github.v3+json')
+	req.add_header('Authorization', auth_h_v)
 
 	res := req.do() or {
 		panic('ooops')
