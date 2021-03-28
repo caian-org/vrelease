@@ -24,5 +24,5 @@ echo "Downloading from: $URL"
     ls -lash
 
     cd v
-    sudo ./v symlink
+    ./v symlink
 )
