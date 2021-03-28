@@ -7,8 +7,8 @@ fn errmsg(txt string) string {
 	return term.bold(term.bright_red('ERROR: ')) + txt
 }
 
-fn get_last_tag() string {
-	res := os.execute('git tag --sort=committerdate')
+fn get_last_tag() ?string {
+	res := os.execute_or_panic('git tag --sort=committerdate')
 	tags := res.output.split('\n')
 
 	if tags.len > 0 {
@@ -31,9 +31,12 @@ fn main() {
 	}
 
 	uname := os.uname()
+	last_tag := get_last_tag() or {
+		panic(errmsg('could not get the last git tag; got "$err.msg"'))
+	}
 
 	meta_c = meta_c
-		.replace(':tag', get_last_tag())
+		.replace(':tag', last_tag)
 		.replace(':arch', uname.machine)
 		.replace(':kernel', uname.sysname)
 
