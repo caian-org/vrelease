@@ -35,7 +35,6 @@ enum Protocol {
 }
 
 struct GitRemote {
-pub:
 	protocol Protocol = Protocol.ssh
 	uri      string
 	user     string
@@ -52,7 +51,6 @@ struct ReleaseBody {
 }
 
 struct Git {
-pub:
 	pp         PrettyPrint [required]
 	debug_mode bool        [required]
 mut:

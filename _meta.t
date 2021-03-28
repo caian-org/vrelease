@@ -1,6 +1,6 @@
 /*       DO NOT TOUCH IT       */
 
-pub fn get_meta_d() map[string]string {
+fn get_meta_d() map[string]string {
 	return map{
 		'program_name': 'vrelease',
 		'program_version': ':tag',
