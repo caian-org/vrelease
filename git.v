@@ -35,11 +35,11 @@ enum Protocol {
 }
 
 struct GitRemote {
-	protocol Protocol [required]
-
-	uri  string [required]
-	user string [required]
-	repo string [required]
+pub:
+	protocol Protocol = Protocol.ssh
+	uri      string
+	user     string
+	repo     string
 }
 
 struct ReleaseBody {
@@ -51,7 +51,25 @@ struct ReleaseBody {
 	prerelease       bool   [required]
 }
 
-pub fn get_remote_info() ?GitRemote {
+struct Git {
+pub:
+	pp         PrettyPrint [required]
+	debug_mode bool        [required]
+mut:
+	remote     GitRemote
+	changelog  map[string]string
+}
+
+fn build_git(pp PrettyPrint, debug_mode bool) Git {
+	return Git{
+		pp: pp,
+		debug_mode: debug_mode
+		remote: GitRemote{}
+		changelog: map{}
+	}
+}
+
+fn (mut g Git) get_remote_info() ? {
 	res := os.execute_or_panic('git remote get-url --all origin')
 	out := res.output.trim_space().split('\n')
 	uri := out[0]
@@ -60,8 +78,8 @@ pub fn get_remote_info() ?GitRemote {
 	if uri.starts_with('http://') { protocol = Protocol.http }
 	if uri.starts_with('https://') { protocol = Protocol.https }
 
-	xtract := fn (p Protocol, uri string) (string, string) {
-		mf := errmsg('malformed remote git URI; got "$uri"')
+	xtract := fn (g Git, p Protocol, uri string) (string, string) {
+		mf := g.pp.errmsg('malformed remote git URI; got "$uri"')
 
 		if !uri.contains('/') { panic(mf) }
 
@@ -92,12 +110,13 @@ pub fn get_remote_info() ?GitRemote {
 		return user, repo[0 .. repo.len - 4] // removes ".git" from the repo name
 	}
 
-	user, repo := xtract(protocol, uri)
-	return GitRemote{protocol, uri, user, repo}
+	user, repo := xtract(g, protocol, uri)
+	g.remote = GitRemote{protocol, uri, user, repo}
+	g.pp.info('executing on repository ${g.pp.emph(repo)} of user ${g.pp.emph(user)}')
 }
 
-pub fn get_repo_changelog(user string, repo string) ?map[string]string {
-	nt := errmsg('no tags found')
+fn (mut g Git) get_repo_changelog() ? {
+	nt := g.pp.errmsg('no tags found')
 
 	mut res := os.execute_or_panic('git tag --sort=committerdate')
 	mut tags := res.output.split('\n')
@@ -113,7 +132,7 @@ pub fn get_repo_changelog(user string, repo string) ?map[string]string {
 		sec_last_ref = tags[tags.len - 2].trim_space()
 	}
 
-	info('generating changelog from ${emph(sec_last_ref)} to ${emph(last_ref)}')
+	g.pp.info('generating changelog from ${g.pp.emph(sec_last_ref)} to ${g.pp.emph(last_ref)}')
 	res = os.execute_or_panic('git log --pretty=oneline ${sec_last_ref}..${last_ref}')
 
 	mut logs := res.output.split('\n')
@@ -127,34 +146,36 @@ pub fn get_repo_changelog(user string, repo string) ?map[string]string {
 		sha := log[0 .. 40]
 		msg := log[41 .. log.len]
 
-		commit_url := 'https://github.com/$user/$repo/commit'
+		commit_url := 'https://github.com/${g.remote.user}/${g.remote.repo}/commit'
 		changelog += '<li><a href="$commit_url/$sha"><code>${sha[0 .. 7]}</code></a> $msg</li>'
 	}
 
 	changelog = '<h1>Changelog</h1><ul>$changelog</ul>'
-	return map{ 'content': changelog, 'tag': last_ref }
+	g.changelog = map{ 'content': changelog, 'tag': last_ref }
 }
 
-pub fn create_release(remote GitRemote, token string, changelog map[string]string) ?Response {
+fn (g Git) create_release(token string) ?Response {
+	g.pp.info('creating release')
+
 	payload := ReleaseBody{
         target_commitish: 'master'
-        tag_name:         changelog['tag']
-        name:             changelog['tag']
-        body:             changelog['content']
+        tag_name:         g.changelog['tag']
+        name:             g.changelog['tag']
+        body:             g.changelog['content']
         draft:            false
         prerelease:       false
 	}
 
 	mut req := Request{
 		method: Method.post,
-		url:    'https://api.github.com/repos/$remote.user/$remote.repo/releases',
+		url:    'https://api.github.com/repos/${g.remote.user}/${g.remote.repo}/releases',
 		data:   json.encode(payload)
 	}
 
-	auth_h_v := 'Basic ' + base64.encode_str('$remote.user:$token')
+	auth_h_v := 'Basic ' + base64.encode_str('${g.remote.user}:$token')
 	req.add_header('Accept', 'application/vnd.github.v3+json')
 	req.add_header('Authorization', auth_h_v)
 
-	res := req.do() or { panic(errmsg('error while making request; got "$err.msg"')) }
+	res := req.do() or { panic(g.pp.errmsg('error while making request; got "$err.msg"')) }
 	return res
 }

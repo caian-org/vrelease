@@ -24,14 +24,31 @@ module main
 
 import term
 
-fn emph(txt string) string {
+struct PrettyPrint {
+	no_color bool [required]
+}
+
+fn (p PrettyPrint) emph(txt string) string {
+	if p.no_color {
+		return txt
+	}
+
 	return term.green(txt)
 }
 
-fn info(txt string) {
-	print(term.bright_blue('=> ') + txt + '\n')
+fn (p PrettyPrint) info(txt string) {
+	if p.no_color {
+		print('=> ${txt}\n')
+	}
+	else {
+		print(term.bright_blue('=> ') + txt + '\n')
+	}
 }
 
-fn errmsg(txt string) string {
+fn (p PrettyPrint) errmsg(txt string) string {
+	if p.no_color {
+		return 'ERROR: ' + txt
+	}
+
 	return term.bold(term.bright_red('ERROR: ')) + txt
 }

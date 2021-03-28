@@ -25,16 +25,16 @@ module main
 import os
 import cli { Command, Flag }
 
-pub struct Cli {
+struct Cli {
 pub mut:
-	cmd Command
+	cmd Command [required]
 }
 
-pub fn (mut c Cli) is_set(flag string) bool {
+fn (mut c Cli) is_set(flag string) bool {
 	return c.cmd.flags.get_bool(flag) or { false }
 }
 
-pub fn (mut c Cli) act() {
+fn (mut c Cli) act() {
 	c.cmd.setup()
 	c.cmd.parse(os.args)
 
@@ -49,7 +49,7 @@ pub fn (mut c Cli) act() {
 	}
 }
 
-pub fn build_cli(md map[string]string) Cli {
+fn build_cli(md map[string]string) Cli {
 	mut cmd := Command{
 		name:            md['program_name']
 		description:     md['program_description']

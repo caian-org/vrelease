@@ -26,43 +26,56 @@ import os
 import term
 import time
 
-fn start_msg(now time.Time, md map[string]string) {
-	println('')
-	println(term.bold("${md['program_name']} ${md['program_version']} ${md['target_kernel']}/${md['target_arch']}"))
-	println(term.gray('program has started @ ${now.str()}'))
-	println('')
-}
+fn start_msg(no_color bool, now time.Time, md map[string]string) {
+	vr_hi := "${md['program_name']} ${md['program_version']} ${md['target_kernel']}/${md['target_arch']}"
+	vr_at := 'program has started @ ${now.str()}'
 
-fn get_token() ?string {
-	key := 'VRELEASE_GITHUB_TOKEN'
-	env := os.environ()
-
-	if key in env { return env[key] }
-	panic(errmsg('environment variable $key is undefined'))
+	println('')
+	if no_color {
+		println(vr_hi)
+		println(vr_at)
+	}
+	else {
+		println(term.bold(vr_hi))
+		println(term.gray(vr_at))
+	}
+	println('')
 }
 
 fn main() {
 	meta_d := get_meta_d()
-
+	started_at := time.now()
 	mut cli := build_cli(meta_d)
 	cli.act()
 
-	started_at := time.now()
-	start_msg(started_at, meta_d)
+	no_color := cli.is_set('no-color')
+	debug_mode := cli.is_set('debug')
+	pp := PrettyPrint{ no_color: no_color }
+	start_msg(no_color, started_at, meta_d)
 
-	gh_token := get_token() or { panic(err.msg) }
-	remote := get_remote_info() or { panic(err.msg) }
+	env := os.environ()
+	mut gh_token := ''
+	mut gh_token_is_undef := true
+	gh_token_var := 'VRELEASE_GITHUB_TOKEN'
 
-	info('executing on repository ${emph(remote.repo)} of user ${emph(remote.user)}')
-	changelog := get_repo_changelog(remote.user, remote.repo) or { panic(err.msg) }
+	if gh_token_var in env {
+		gh_token = env[gh_token_var].trim_space()
+		if gh_token != '' { gh_token_is_undef = false }
+	}
 
-	info('creating release')
-	release_res := create_release(remote, gh_token, changelog) or { panic(err.msg) }
+	if gh_token_is_undef {
+		panic(pp.errmsg('environment variable $gh_token_var is undefined'))
+	}
 
+	mut git := build_git(pp, debug_mode)
+	git.get_remote_info() or { panic(err.msg) }
+	git.get_repo_changelog() or { panic(err.msg) }
+
+	release_res := git.create_release(gh_token) or { panic(err.msg) }
 	if release_res.status_code != 201 {
-		panic(errmsg('failed with code $release_res.status_code; << $release_res.text >>'))
+		panic(pp.errmsg('failed with code $release_res.status_code; << $release_res.text >>'))
 	}
 
 	duration := time.now() - started_at
-	info('done; took ${emph(duration.milliseconds().str() + "ms")}')
+	pp.info('done; took ${pp.emph(duration.milliseconds().str() + "ms")}')
 }
