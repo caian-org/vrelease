@@ -28,6 +28,7 @@ import term
 import time
 import encoding.base64
 
+import cli { Command, Flag }
 import net.http { Method, Request, Response }
 
 /* data structures */
@@ -71,13 +72,10 @@ fn errmsg(txt string) string {
 
 /* running "phases" */
 
-fn start_msg() {
-	now_ts := time.now().str()
-	program_version, target_arch, target_kernel := metad()
-
+fn start_msg(now time.Time, md map[string]string) {
 	println('')
-	println(term.bold('vrelease $program_version $target_kernel/$target_arch'))
-	println(term.gray('program has started @ ${now_ts}'))
+	println(term.bold("${md['program_name']} ${md['program_version']} ${md['target_kernel']}/${md['target_arch']}"))
+	println(term.gray('program has started @ ${now.str()}'))
 	println('')
 }
 
@@ -175,18 +173,18 @@ fn get_repo_changelog(user string, repo string) ?map[string]string {
 
 fn create_release(remote GitRemote, token string, changelog map[string]string) ?Response {
 	payload := ReleaseBody{
-        target_commitish: 'master',
-        tag_name: changelog['tag'],
-        name: changelog['tag'],
-        body: changelog['content'],
-        draft: false,
-        prerelease: false,
+        target_commitish: 'master'
+        tag_name:         changelog['tag']
+        name:             changelog['tag']
+        body:             changelog['content']
+        draft:            false
+        prerelease:       false
 	}
 
 	mut req := Request{
 		method: Method.post,
-		url: 'https://api.github.com/repos/$remote.user/$remote.repo/releases',
-		data: json.encode(payload)
+		url:    'https://api.github.com/repos/$remote.user/$remote.repo/releases',
+		data:   json.encode(payload)
 	}
 
 	auth_h_v := 'Basic ' + base64.encode_str('$remote.user:$token')
@@ -197,9 +195,93 @@ fn create_release(remote GitRemote, token string, changelog map[string]string) ?
 	return res
 }
 
+struct Cli {
+pub mut:
+	cmd Command
+}
+
+fn (mut c Cli) is_set(flag string) bool {
+	return c.cmd.flags.get_bool(flag) or { false }
+}
+
+fn (mut c Cli) act() {
+	c.cmd.setup()
+	c.cmd.parse(os.args)
+
+	if c.is_set('help') {
+		c.cmd.execute_help()
+		exit(0)
+	}
+
+	if c.is_set('version') {
+		println(c.cmd.version)
+		exit(0)
+	}
+}
+
+fn build_cli(md map[string]string) Cli {
+	mut cmd := Command{
+		name:            md['program_name']
+		description:     md['program_description']
+		version:         md['program_version']
+		disable_help:    true
+		disable_version: true
+	}
+
+	cmd.add_flag(Flag{
+		flag:        .bool
+		name:        'debug'
+		abbrev:      'd'
+		description: 'enables the debug mode'
+	})
+
+	cmd.add_flag(Flag{
+		flag:        .bool
+		name:        'no-color'
+		abbrev:      'n'
+		description: 'disables output with colors (useful on non-compliant shells)'
+	})
+
+	cmd.add_flag(Flag{
+		flag:        .string
+		name:        'attach'
+		abbrev:      'a'
+		description: 'attaches (uploads) a file to the release'
+	})
+
+	cmd.add_flag(Flag{
+		flag:          .int
+		name:          'limit'
+		abbrev:        'l'
+		default_value: ['-1']
+		description:   'sets a limit to the amount of commits on the changelog'
+	})
+
+	cmd.add_flag(Flag{
+		flag:        .bool
+		name:        'help'
+		abbrev:      'h'
+		description: 'prints help information'
+	})
+
+	cmd.add_flag(Flag{
+		flag:        .bool
+		name:        'version'
+		abbrev:      'v'
+		description: 'prints version information'
+	})
+
+	return Cli{ cmd }
+}
+
 fn main() {
+	meta_d := get_meta_d()
+
+	mut cli := build_cli(meta_d)
+	cli.act()
+
 	started_at := time.now()
-	start_msg()
+	start_msg(started_at, meta_d)
 
 	gh_token := get_token() or { panic(err.msg) }
 	remote := get_remote_info() or { panic(err.msg) }
@@ -215,5 +297,5 @@ fn main() {
 	}
 
 	duration := time.now() - started_at
-	info('done; took ${emph(duration.milliseconds() + "ms")}')
+	info('done; took ${emph(duration.milliseconds().str() + "ms")}')
 }
