@@ -151,7 +151,7 @@ fn get_repo_changelog(user string, repo string) ?map[string]string {
 		sec_last_ref = tags[tags.len - 2].trim_space()
 	}
 
-	info('generating changelog from "${emph(sec_last_ref)}" to "${emph(last_ref)}"')
+	info('generating changelog from ${emph(sec_last_ref)} to ${emph(last_ref)}')
 	res = os.execute_or_panic('git log --pretty=oneline ${sec_last_ref}..${last_ref}')
 
 	mut logs := res.output.split('\n')
@@ -193,23 +193,27 @@ fn create_release(remote GitRemote, token string, changelog map[string]string) ?
 	req.add_header('Accept', 'application/vnd.github.v3+json')
 	req.add_header('Authorization', auth_h_v)
 
-	res := req.do() or { panic(errmsg('could create release; got "$err.msg"')) }
+	res := req.do() or { panic(errmsg('error while making request; got "$err.msg"')) }
 	return res
 }
 
 fn main() {
+	started_at := time.now()
 	start_msg()
 
 	gh_token := get_token() or { panic(err.msg) }
 	remote := get_remote_info() or { panic(err.msg) }
 
-	info('executing on repository "${emph(remote.repo)}" of user "${emph(remote.user)}"')
+	info('executing on repository ${emph(remote.repo)} of user ${emph(remote.user)}')
 	changelog := get_repo_changelog(remote.user, remote.repo) or { panic(err.msg) }
 
 	info('creating release')
 	release_res := create_release(remote, gh_token, changelog) or { panic(err.msg) }
 
 	if release_res.status_code != 201 {
-		panic(errmsg('failed with code $release_res.status_code; res: "$release_res.text"'))
+		panic(errmsg('failed with code $release_res.status_code; << $release_res.text >>'))
 	}
+
+	duration := time.now() - started_at
+	info('done; took ${emph(duration.milliseconds() + "ms")}')
 }
