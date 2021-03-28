@@ -47,6 +47,10 @@ struct GitRemote {
 
 /* utils */
 
+fn emph(txt string) string {
+	return term.green(txt)
+}
+
 fn info(txt string) {
 	print(term.bright_blue('=> ') + txt + '\n')
 }
@@ -71,50 +75,35 @@ fn get_token() ?string {
 	key := 'VRELEASE_GITHUB_TOKEN'
 	env := os.environ()
 
-	if key in env {
-		return env[key]
-	}
-
+	if key in env { return env[key] }
 	panic(errmsg('environment variable $key is undefined'))
 }
 
 fn get_remote_info() ?GitRemote {
 	res := os.execute_or_panic('git remote get-url --all origin')
-	uri := res.output.trim_space()
+	out := res.output.trim_space().split('\n')
+	uri := out[0]
 
 	mut protocol := Protocol.ssh
-	if uri.starts_with('http://') {
-		protocol = Protocol.http
-	}
-
-	if uri.starts_with('https://') {
-		protocol = Protocol.https
-	}
+	if uri.starts_with('http://') { protocol = Protocol.http }
+	if uri.starts_with('https://') { protocol = Protocol.https }
 
 	xtract := fn (p Protocol, uri string) (string, string) {
 		mf := errmsg('malformed remote git URI; got "$uri"')
 
-		if !uri.contains('/') {
-			panic(mf)
-		}
+		if !uri.contains('/') { panic(mf) }
 
 		mut user := ''
 		mut repo := ''
 
 		if p == Protocol.ssh {
-			if !uri.contains(':') {
-				panic(mf)
-			}
+			if !uri.contains(':') { panic(mf) }
 
 			mut segs := uri.split(':')
-			if segs.len != 2 {
-				panic(mf)
-			}
+			if segs.len != 2 { panic(mf) }
 
 			segs = segs[1].split('/')
-			if segs.len != 2 {
-				panic(mf)
-			}
+			if segs.len != 2 { panic(mf) }
 
 			user = segs[0]
 			repo = segs[1]
@@ -122,9 +111,7 @@ fn get_remote_info() ?GitRemote {
 		}
 		else {
 			segs := uri.split('/')
-			if segs.len != 5 {
-				panic(mf)
-			}
+			if segs.len != 5 { panic(mf) }
 
 			user = segs[3]
 			repo = segs[4]
@@ -137,15 +124,53 @@ fn get_remote_info() ?GitRemote {
 	return GitRemote{protocol, uri, user, repo}
 }
 
-fn main() {
-	emph := fn(m string) string { return term.green(m) }
+fn get_repo_changelog(user string, repo string) ?string {
+	nt := errmsg('no tags found')
 
+	mut res := os.execute_or_panic('git tag --sort=committerdate')
+	mut tags := res.output.split('\n')
+
+	if tags.len <= 1 { panic(nt) }
+	tags.pop()
+
+	if tags[0].trim_space() == '' { panic(nt) }
+	last_ref := tags[tags.len - 1].trim_space()
+
+	mut sec_last_ref := 'master'
+	if tags.len >= 2 {
+		sec_last_ref = tags[tags.len - 2].trim_space()
+	}
+
+	info('generating changelog from "${emph(sec_last_ref)}" to "${emph(last_ref)}"')
+	res = os.execute_or_panic('git log --pretty=oneline ${sec_last_ref}..${last_ref}')
+
+	mut logs := res.output.split('\n')
+	if logs.len <= 1 { panic('no entries') }
+	logs.pop()
+
+	mut changelog := ''
+	for i := 0; i < logs.len; i++ {
+		log := logs[i]
+
+		sha := log[0 .. 40]
+		msg := log[41 .. log.len]
+
+		commit_url := 'https://github.com/$user/$repo/commit'
+		changelog += '<li><a href="$commit_url/$sha"><code>${sha[0 .. 7]}</code></a> $msg</li>'
+	}
+
+	return '<h1>Changelog</h1><ul>$changelog</ul>'
+}
+
+fn main() {
 	start_msg()
 
 	gh_token := get_token() or { panic(err.msg) }
 	remote := get_remote_info() or { panic(err.msg) }
 
-	info('executing on project "${emph(remote.repo)}" of account "${emph(remote.user)}"')
+	info('executing on repository "${emph(remote.repo)}" of user "${emph(remote.user)}"')
+	changelog := get_repo_changelog(remote.user, remote.repo) or { panic(err.msg) }
+
 	auth_h_v := 'Basic ' + base64.encode_str('$remote.user:$gh_token')
 
 	mut req := Request{
@@ -156,9 +181,7 @@ fn main() {
 	req.add_header('Accept', 'application/vnd.github.v3+json')
 	req.add_header('Authorization', auth_h_v)
 
-	res := req.do() or {
-		panic('ooops')
-	}
+	res := req.do() or { panic('ooops') }
 
 	println(res.status_code)
 	println(res.text)
