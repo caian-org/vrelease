@@ -26,10 +26,11 @@ matrix:
 
 
 before_install:
-  - sh .ci/install-v.sh
+  - time sh .ci/install-v.sh
+  - time v self -prod
 
 install:
-  - make build-release
+  - time make build-release
 
 script:
   - ./vrelease -h
