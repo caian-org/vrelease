@@ -27,6 +27,19 @@ import term
 import time
 import net.http { Method, Request }
 
+enum Protocol {
+	http
+	https
+	ssh
+}
+
+struct GitRemote {
+	protocol Protocol [required]
+	uri      string   [required]
+	user     string   [required]
+	project  string   [required]
+}
+
 fn info(txt string) {
 	print(term.bright_blue('=> ') + txt + '\n')
 }
@@ -55,6 +68,51 @@ fn get_token() ?string {
 	panic(errmsg('environment variable $key is undefined'))
 }
 
+fn get_remote_info() ?GitRemote {
+	res := os.execute_or_panic('git remote get-url --all origin')
+	uri := res.output.trim_space()
+
+	mut protocol := Protocol.ssh
+	if uri.starts_with('http://') {
+		protocol = Protocol.http
+	}
+
+	if uri.starts_with('https://') {
+		protocol = Protocol.https
+	}
+
+	xtract := fn (p Protocol, uri string) (string, string) {
+		mf := errmsg('malformed SSH URI')
+
+		if p == Protocol.ssh {
+			if !(uri.contains(':') && uri.contains('/')) {
+				panic(mf)
+			}
+
+			mut segs := uri.split(':')
+			if segs.len != 2 {
+				panic(mf)
+			}
+
+			segs = segs[1].split('/')
+			if segs.len != 2 {
+				panic(mf)
+			}
+
+			user := segs[0]
+			repo := segs[1]
+
+			return user, repo[0 .. repo.len - 4] // removes ".git" from the repo name
+		}
+
+		return '', ''
+	}
+
+	user, project := xtract(protocol, uri)
+
+	return GitRemote{protocol, uri, user, project}
+}
+
 fn main() {
 	start_msg()
 
@@ -64,9 +122,15 @@ fn main() {
 
 	info('got $gh_token')
 
+	remote := get_remote_info() or {
+		panic(errmsg('could not fetch url from origin; got "$err.msg"'))
+	}
+
+	println(remote)
+
 	req := Request{
 		method: Method.get,
-		url: 'https://api.github.com/repos/caiertl/tmp/releases'
+		url: 'https://api.github.com/repos/$remote.user/$remote.project/releases'
 	}
 
 	res := req.do() or {
