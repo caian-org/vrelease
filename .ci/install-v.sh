@@ -16,10 +16,13 @@ URL="https://github.com/vlang/v/releases/download/${VLANG_VERSION}/${FN}"
 
 echo "Downloading from: $URL"
 
-wget -q "$URL"
-unzip -q "$FN"
+(
+    cd /tmp
+    wget -q "$URL"
+    unzip -q "$FN"
 
-ls -lash
+    ls -lash
 
-cd v
-sudo ./v symlink
+    cd v
+    sudo ./v symlink
+)
