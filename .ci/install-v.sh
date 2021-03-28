@@ -21,12 +21,12 @@ echo "Downloading from: $URL"
     wget -q "$URL"
     unzip -q "$FN"
 
-    ls -lash
+    echo "Path: $PATH"
 
     cd v
     ./v up
 
     if [ "$VLANG_TARGET_OS" = "macos" ];   then ./v symlink; fi
     if [ "$VLANG_TARGET_OS" = "windows" ]; then ./v symlink; fi
-    if [ "$VLANG_TARGET_OS" = "linux" ];   then sudo ./v symlink; fi
+    if [ "$VLANG_TARGET_OS" = "linux" ];   then sudo ln -s ./v /usr/bin; fi
 )

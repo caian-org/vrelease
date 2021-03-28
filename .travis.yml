@@ -5,7 +5,7 @@ _osx_addons: &osx_addons
     homebrew:
       packages:
         - openssl
-      update: true
+      update: false
 
 _linux_addons: &linux_addons
   addons:
