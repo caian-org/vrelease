@@ -1,0 +1,36 @@
+language: generic
+
+matrix:
+  include:
+    - os: windows
+
+    # osx machines (x86-64)
+    - os: osx
+      osx_image: xcode12
+
+    - os: osx
+      osx_image: xcode11.3
+
+    - os: osx
+      osx_image: xcode10.1
+
+    # linux machines (x86-64)
+    - os: linux
+      dist: Focal
+
+    - os: linux
+      dist: Bionic
+
+    - os: linux
+      dist: Xenial
+
+
+before_install:
+  - sh .ci/install-v.sh
+
+install:
+  - make build-release
+
+script:
+  - ./vrelease -h
+  - ./vrelease -v
