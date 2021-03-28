@@ -30,8 +30,19 @@ mut:
 	cmd Command [required]
 }
 
-fn (mut c Cli) is_set(flag string) bool {
-	return c.cmd.flags.get_bool(flag) or { false }
+fn (c Cli) f() []Flag {
+	return c.cmd.flags
+}
+
+fn (c Cli) is_set(flag string) bool {
+	return c.f().get_bool(flag) or { false }
+}
+
+fn (c Cli) get_limit() int {
+	v := c.f().get_int('limit') or { 0 }
+
+	if v <= 0 { return -1 }
+	return v
 }
 
 fn (mut c Cli) act() {

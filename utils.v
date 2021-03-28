@@ -25,7 +25,8 @@ module main
 import term
 
 struct PrettyPrint {
-	no_color bool [required]
+	debug_mode bool [required]
+	no_color   bool [required]
 }
 
 fn (p PrettyPrint) emph(txt string) string {
@@ -38,10 +39,21 @@ fn (p PrettyPrint) emph(txt string) string {
 
 fn (p PrettyPrint) info(txt string) {
 	if p.no_color {
-		print('=> ${txt}\n')
+		println('=> ${txt}')
 	}
 	else {
-		print(term.bright_blue('=> ') + txt + '\n')
+		println(term.bright_blue('=> ') + txt)
+	}
+}
+
+fn (p PrettyPrint) debug(txt string) {
+	if p.debug_mode {
+		if p.no_color {
+			println('==> [DEBUG] $txt')
+		}
+		else {
+			println(term.yellow('==> ') + term.bold('[DEBUG] ') + txt)
+		}
 	}
 }
 

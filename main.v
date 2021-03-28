@@ -43,15 +43,20 @@ fn start_msg(no_color bool, now time.Time, md map[string]string) {
 }
 
 fn main() {
-	meta_d := get_meta_d()
+	meta_d     := get_meta_d()
 	started_at := time.now()
-	mut cli := build_cli(meta_d)
+	mut cli    := build_cli(meta_d)
 	cli.act()
 
-	no_color := cli.is_set('no-color')
 	debug_mode := cli.is_set('debug')
-	pp := PrettyPrint{ no_color: no_color }
+	no_color   := cli.is_set('no-color')
+	limit      := cli.get_limit()
+	pp := PrettyPrint{ debug_mode, no_color }
 	start_msg(no_color, started_at, meta_d)
+
+	pp.debug('flag_debug_mode = $debug_mode')
+	pp.debug('flag_no_color = $no_color')
+	pp.debug('flag_limit = $limit')
 
 	env := os.environ()
 	mut gh_token := ''
@@ -67,7 +72,7 @@ fn main() {
 		panic(pp.errmsg('environment variable $gh_token_var is undefined'))
 	}
 
-	mut git := build_git(pp, debug_mode)
+	mut git := build_git(pp, debug_mode, limit)
 	git.get_remote_info() or { panic(err.msg) }
 	git.get_repo_changelog() or { panic(err.msg) }
 

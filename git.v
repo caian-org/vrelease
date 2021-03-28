@@ -53,15 +53,17 @@ struct ReleaseBody {
 struct Git {
 	pp         PrettyPrint [required]
 	debug_mode bool        [required]
+	limit      int         [required]
 mut:
 	remote     GitRemote
 	changelog  map[string]string
 }
 
-fn build_git(pp PrettyPrint, debug_mode bool) Git {
+fn build_git(pp PrettyPrint, debug_mode bool, limit int) Git {
 	return Git{
 		pp: pp,
 		debug_mode: debug_mode
+		limit: limit
 		remote: GitRemote{}
 		changelog: map{}
 	}
@@ -69,12 +71,16 @@ fn build_git(pp PrettyPrint, debug_mode bool) Git {
 
 fn (mut g Git) get_remote_info() ? {
 	res := os.execute_or_panic('git remote get-url --all origin')
+	g.pp.debug('git_remote_info = ${json.encode(res.output)}')
+
 	out := res.output.trim_space().split('\n')
 	uri := out[0]
+	g.pp.debug('git_chosed_uri = $uri')
 
 	mut protocol := Protocol.ssh
 	if uri.starts_with('http://') { protocol = Protocol.http }
 	if uri.starts_with('https://') { protocol = Protocol.https }
+	g.pp.debug('git_detected_protocol = $protocol')
 
 	xtract := fn (g Git, p Protocol, uri string) (string, string) {
 		mf := g.pp.errmsg('malformed remote git URI; got "$uri"')
@@ -117,6 +123,8 @@ fn (mut g Git) get_repo_changelog() ? {
 	nt := g.pp.errmsg('no tags found')
 
 	mut res := os.execute_or_panic('git tag --sort=committerdate')
+	g.pp.debug('git_tags_sorted = ${json.encode(res.output)}')
+
 	mut tags := res.output.split('\n')
 
 	if tags.len <= 1 { panic(nt) }
@@ -124,6 +132,7 @@ fn (mut g Git) get_repo_changelog() ? {
 
 	if tags[0].trim_space() == '' { panic(nt) }
 	last_ref := tags[tags.len - 1].trim_space()
+	g.pp.debug('git_found_tags = $tags')
 
 	mut sec_last_ref := 'master'
 	if tags.len >= 2 {
@@ -136,9 +145,14 @@ fn (mut g Git) get_repo_changelog() ? {
 	mut logs := res.output.split('\n')
 	if logs.len <= 1 { panic('no entries') }
 	logs.pop()
+	g.pp.debug('git_logs = \n$logs')
+
+	mut limit := if logs.len > g.limit { g.limit } else { logs.len }
+	limit = if g.limit == -1 { logs.len } else { limit }
+	g.pp.debug('git_chosed_commit_limit = $limit')
 
 	mut changelog := ''
-	for i := 0; i < logs.len; i++ {
+	for i := 0; i < limit; i++ {
 		log := logs[i]
 
 		sha := log[0 .. 40]
@@ -149,6 +163,7 @@ fn (mut g Git) get_repo_changelog() ? {
 	}
 
 	changelog = '<h1>Changelog</h1><ul>$changelog</ul>'
+	g.pp.debug('generated_changelog = \n$changelog')
 	g.changelog = map{ 'content': changelog, 'tag': last_ref }
 }
 
@@ -164,10 +179,16 @@ fn (g Git) create_release(token string) ?Response {
         prerelease:       false
 	}
 
+	url := 'https://api.github.com/repos/${g.remote.user}/${g.remote.repo}/releases'
+	data := json.encode(payload)
+
+	g.pp.debug('git_api_url = $url')
+	g.pp.debug('git_req_data = \n$data')
+
 	mut req := Request{
-		method: Method.post,
-		url:    'https://api.github.com/repos/${g.remote.user}/${g.remote.repo}/releases',
-		data:   json.encode(payload)
+		method: Method.post
+		url:    url
+		data:   data
 	}
 
 	auth_h_v := 'Basic ' + base64.encode_str('${g.remote.user}:$token')
