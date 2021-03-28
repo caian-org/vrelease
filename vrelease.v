@@ -23,11 +23,12 @@
 module main
 
 import os
+import json
 import term
 import time
 import encoding.base64
 
-import net.http { Method, Request }
+import net.http { Method, Request, Response }
 
 /* data structures */
 
@@ -43,6 +44,15 @@ struct GitRemote {
 	uri  string [required]
 	user string [required]
 	repo string [required]
+}
+
+struct ReleaseBody {
+	target_commitish string [required]
+	tag_name         string [required]
+	name             string [required]
+	body             string [required]
+	draft            bool   [required]
+	prerelease       bool   [required]
 }
 
 /* utils */
@@ -124,7 +134,7 @@ fn get_remote_info() ?GitRemote {
 	return GitRemote{protocol, uri, user, repo}
 }
 
-fn get_repo_changelog(user string, repo string) ?string {
+fn get_repo_changelog(user string, repo string) ?map[string]string {
 	nt := errmsg('no tags found')
 
 	mut res := os.execute_or_panic('git tag --sort=committerdate')
@@ -159,7 +169,32 @@ fn get_repo_changelog(user string, repo string) ?string {
 		changelog += '<li><a href="$commit_url/$sha"><code>${sha[0 .. 7]}</code></a> $msg</li>'
 	}
 
-	return '<h1>Changelog</h1><ul>$changelog</ul>'
+	changelog = '<h1>Changelog</h1><ul>$changelog</ul>'
+	return map{ 'content': changelog, 'tag': last_ref }
+}
+
+fn create_release(remote GitRemote, token string, changelog map[string]string) ?Response {
+	payload := ReleaseBody{
+        target_commitish: 'master',
+        tag_name: changelog['tag'],
+        name: changelog['tag'],
+        body: changelog['content'],
+        draft: false,
+        prerelease: false,
+	}
+
+	mut req := Request{
+		method: Method.post,
+		url: 'https://api.github.com/repos/$remote.user/$remote.repo/releases',
+		data: json.encode(payload)
+	}
+
+	auth_h_v := 'Basic ' + base64.encode_str('$remote.user:$token')
+	req.add_header('Accept', 'application/vnd.github.v3+json')
+	req.add_header('Authorization', auth_h_v)
+
+	res := req.do() or { panic(errmsg('could create release; got "$err.msg"')) }
+	return res
 }
 
 fn main() {
@@ -171,18 +206,10 @@ fn main() {
 	info('executing on repository "${emph(remote.repo)}" of user "${emph(remote.user)}"')
 	changelog := get_repo_changelog(remote.user, remote.repo) or { panic(err.msg) }
 
-	auth_h_v := 'Basic ' + base64.encode_str('$remote.user:$gh_token')
+	info('creating release')
+	release_res := create_release(remote, gh_token, changelog) or { panic(err.msg) }
 
-	mut req := Request{
-		method: Method.get,
-		url: 'https://api.github.com/repos/$remote.user/$remote.repo/releases'
+	if release_res.status_code != 201 {
+		panic(errmsg('failed with code $release_res.status_code; res: "$release_res.text"'))
 	}
-
-	req.add_header('Accept', 'application/vnd.github.v3+json')
-	req.add_header('Authorization', auth_h_v)
-
-	res := req.do() or { panic('ooops') }
-
-	println(res.status_code)
-	println(res.text)
 }
