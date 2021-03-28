@@ -16,3 +16,5 @@ unzip "$FN"
 
 cd v
 sudo ./v symlink
+
+v self -prod
