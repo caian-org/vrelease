@@ -28,7 +28,7 @@ echo "Downloading from: $URL"
 
     if [ "$VLANG_TARGET_OS" = "macos" ];   then ./v symlink; fi
     if [ "$VLANG_TARGET_OS" = "windows" ]; then ./v symlink; fi
-    if [ "$VLANG_TARGET_OS" = "linux" ];   then sudo ./v symlink; fi
+    if [ "$VLANG_TARGET_OS" = "linux" ];   then sudo ln -s /tmp/v/v ~/bin; fi
 )
 
 v version
