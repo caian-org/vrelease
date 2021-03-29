@@ -1,17 +1,9 @@
 language: generic
 
-_osx_addons: &osx_addons
-  addons:
-    homebrew:
-      packages:
-        - openssl
-      update: false
-
-_linux_addons: &linux_addons
-  addons:
-    apt:
-      packages:
-        - libssl-dev
+addons:
+  apt:
+    packages:
+      - libssl-dev
 
 matrix:
   include:
@@ -20,34 +12,30 @@ matrix:
     # osx machines (x86-64)
     - os: osx
       osx_image: xcode12
-      <<: *osx_addons
 
     - os: osx
       osx_image: xcode11.3
-      <<: *osx_addons
 
     - os: osx
       osx_image: xcode10.1
-      <<: *osx_addons
 
     # linux machines (x86-64)
     - os: linux
       dist: Focal
-      <<: *linux_addons
 
     - os: linux
       dist: Bionic
-      <<: *linux_addons
 
     - os: linux
       dist: Xenial
-      <<: *linux_addons
 
 
 before_install:
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sh .ci/install-osx-deps.sh; fi
   - time sh .ci/install-v.sh
 
 install:
+  - pwd
   - time make build-release
 
 script:
