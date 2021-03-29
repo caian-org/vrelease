@@ -115,6 +115,8 @@ fn main() {
 		panic(pp.errmsg('failed with code $release_res.status_code; << $release_res.text >>'))
 	}
 
+	pp.info('available @ ${pp.href(git.get_release_page_url())}')
+
 	duration := time.now() - started_at
 	pp.info('done; took ${pp.emph(duration.milliseconds().str() + "ms")}')
 }

@@ -29,12 +29,28 @@ struct PrettyPrint {
 	no_color   bool [required]
 }
 
+fn (p PrettyPrint) errmsg(txt string) string {
+	if p.no_color {
+		return 'ERROR: ' + txt
+	}
+
+	return term.bold(term.bright_red('ERROR: ')) + txt
+}
+
 fn (p PrettyPrint) emph(txt string) string {
 	if p.no_color {
 		return txt
 	}
 
 	return term.green(txt)
+}
+
+fn (p PrettyPrint) href(txt string) string {
+	if p.no_color {
+		return txt
+	}
+
+	return term.underline(txt)
 }
 
 fn (p PrettyPrint) info(txt string) {
@@ -55,12 +71,4 @@ fn (p PrettyPrint) debug(txt string) {
 			println(term.yellow('==> ') + term.bold('[DEBUG] ') + txt)
 		}
 	}
-}
-
-fn (p PrettyPrint) errmsg(txt string) string {
-	if p.no_color {
-		return 'ERROR: ' + txt
-	}
-
-	return term.bold(term.bright_red('ERROR: ')) + txt
 }

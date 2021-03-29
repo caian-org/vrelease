@@ -207,3 +207,7 @@ fn (g Git) create_release(token string) ?Response {
 	res := req.do() or { panic(g.pp.errmsg('error while making request; got "$err.msg"')) }
 	return res
 }
+
+fn (g Git) get_release_page_url() string {
+	return 'https://github.com/$g.remote.user/$g.remote.repo/releases/tag/${g.changelog["tag"]}'
+}
