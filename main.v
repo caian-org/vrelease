@@ -26,6 +26,27 @@ import os
 import term
 import time
 
+fn is_valid_file(filepath string) bool {
+	return os.is_file(filepath) && os.is_readable(filepath)
+}
+
+fn resolve_path(p string) ?string {
+	if os.is_abs_path(p) {
+		if is_valid_file(p) {
+			return p
+		}
+
+		panic('file path "$p" does not exists or cannot be read')
+	}
+
+	resolved_p := os.real_path(os.join_path(os.getwd(), p))
+	if is_valid_file(resolved_p) {
+		return resolved_p
+	}
+
+	panic('resolved path "$resolved_p" does not exists or cannot be read')
+}
+
 fn start_msg(no_color bool, now time.Time, md map[string]string) {
 	vr_hi := "${md['program_name']} ${md['program_version']} ${md['target_kernel']}/${md['target_arch']}"
 	vr_at := 'program has started @ ${now.str()}'
@@ -51,12 +72,25 @@ fn main() {
 	debug_mode := cli.is_set('debug')
 	no_color   := cli.is_set('no-color')
 	limit      := cli.get_limit()
+	annexes    := cli.get_annexes()
+
 	pp := PrettyPrint{ debug_mode, no_color }
 	start_msg(no_color, started_at, meta_d)
 
 	pp.debug('flag_debug_mode = $debug_mode')
 	pp.debug('flag_no_color = $no_color')
 	pp.debug('flag_limit = $limit')
+	pp.debug('flag_attach = $annexes')
+
+	mut resolved_annexes := []string{}
+	if annexes.len > 0 {
+		for i := 0; i < annexes.len; i++ {
+			p := resolve_path(annexes[i]) or { panic(pp.errmsg(err.msg)) }
+			resolved_annexes << p
+		}
+	}
+
+	pp.debug('resolved_annexes = $resolved_annexes')
 
 	env := os.environ()
 	mut gh_token := ''

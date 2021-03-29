@@ -45,6 +45,10 @@ fn (c Cli) get_limit() int {
 	return v
 }
 
+fn (c Cli) get_annexes() []string {
+	return c.f().get_strings('attach') or { []string{} }
+}
+
 fn (mut c Cli) act() {
 	c.cmd.setup()
 	c.cmd.parse(os.args)
@@ -84,7 +88,7 @@ fn build_cli(md map[string]string) Cli {
 	})
 
 	cmd.add_flag(Flag{
-		flag:        .string
+		flag:        .string_array
 		name:        'attach'
 		abbrev:      'a'
 		description: 'attaches (uploads) a file to the release'
