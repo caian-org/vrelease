@@ -31,8 +31,8 @@ matrix:
 
 
 before_install:
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sh .ci/install-osx-deps.sh; fi
-  - time sh .ci/install-v.sh
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash .ci/install-osx-deps.sh; fi
+  - time bash .ci/install-v.sh
 
 install:
   - pwd

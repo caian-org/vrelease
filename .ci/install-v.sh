@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
@@ -30,3 +30,5 @@ echo "Downloading from: $URL"
     if [ "$VLANG_TARGET_OS" = "windows" ]; then ./v symlink; fi
     if [ "$VLANG_TARGET_OS" = "linux" ];   then sudo ./v symlink; fi
 )
+
+v version

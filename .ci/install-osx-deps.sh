@@ -1,9 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
-rvm use 2.7.2 --install --binary
+source ~/.rvm/scripts/rvm && rvm use 2.7.2 --install --binary
 gem install bundler
 
-brew bundle --verbose --global
 brew install openssl
