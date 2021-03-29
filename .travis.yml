@@ -1,41 +1,27 @@
 language: generic
 
-addons:
-  apt:
-    packages:
-      - libssl-dev
-
 matrix:
   include:
-    - os: windows
-
-    # osx machines (x86-64)
     - os: osx
       osx_image: xcode12
 
     - os: osx
       osx_image: xcode11.3
 
-    - os: osx
-      osx_image: xcode10.1
-
-    # linux machines (x86-64)
     - os: linux
       dist: Focal
 
     - os: linux
       dist: Bionic
 
-    - os: linux
-      dist: Xenial
-
 
 before_install:
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sh .ci/install-osx-deps.sh; fi
-  - time sh .ci/install-v.sh
+  - if [ "$TRAVIS_OS_NAME" = "osx" ];   then gem install bundler;  fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ];   then brew install openssl; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install -y libssl-dev; fi
 
 install:
-  - pwd
+  - time sh .ci/install-v.sh
   - time make build-release
 
 script:

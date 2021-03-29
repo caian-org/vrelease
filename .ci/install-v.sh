@@ -8,7 +8,6 @@ VLANG_VERSION="0.2.2"
 case "$TRAVIS_OS_NAME" in
     osx) VLANG_TARGET_OS="macos" ;;
     linux) VLANG_TARGET_OS="linux" ;;
-    windows) VLANG_TARGET_OS="windows" ;;
 esac
 
 FN="v_${VLANG_TARGET_OS}.zip"
@@ -26,9 +25,8 @@ echo "Downloading from: $URL"
     cd v
     ./v up
 
-    if [ "$VLANG_TARGET_OS" = "macos" ];   then ./v symlink; fi
-    if [ "$VLANG_TARGET_OS" = "windows" ]; then ./v symlink; fi
-    if [ "$VLANG_TARGET_OS" = "linux" ];   then sudo ln -s /tmp/v/v ~/bin; fi
+    if [ "$VLANG_TARGET_OS" = "macos" ]; then ./v symlink; fi
+    if [ "$VLANG_TARGET_OS" = "linux" ]; then sudo ln -s /tmp/v/v ~/bin; fi
 )
 
 v version
