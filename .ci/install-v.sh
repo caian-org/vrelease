@@ -20,12 +20,13 @@ echo "Downloading from: $URL"
     wget -q "$URL"
     unzip -q "$FN"
 
-    echo "Path: $PATH"
-
     cd v
     ./v up
 
     if [ "$VLANG_TARGET_OS" = "macos" ]; then ./v symlink; fi
+
+    # for some reason, "symlink" doesn't work properly on *ANY* version of ubuntu
+    # that's why i'm symlinking "manually"
     if [ "$VLANG_TARGET_OS" = "linux" ]; then sudo ln -s /tmp/v/v ~/bin; fi
 )
 
