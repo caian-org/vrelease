@@ -26,7 +26,7 @@ fn main() {
 	dest_f := './meta.v'
 	os.rm(dest_f) or {}
 
-	mut meta_c := os.read_file('./_meta.t') or {
+	mut meta_c := os.read_file('./_meta') or {
 		panic(errmsg('could not open meta template'))
 	}
 
