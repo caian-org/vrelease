@@ -5,7 +5,7 @@ VFLAGS =
 
 build:
 	@echo writing meta
-	@$(VC) run util/write-meta.v
+	@$(VC) run scripts/write-meta.v
 	@echo compiling
 	@$(VC) $(VFLAGS) .
 
