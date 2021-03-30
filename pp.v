@@ -24,6 +24,7 @@ module main
 
 import term
 
+
 struct PrettyPrint {
 	debug_mode bool [required]
 	no_color   bool [required]
