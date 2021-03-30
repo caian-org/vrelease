@@ -28,6 +28,7 @@ import encoding.base64
 
 import net.http { Method, Request, Response }
 
+
 enum Protocol {
 	http
 	https
@@ -176,6 +177,20 @@ fn (mut g Git) get_repo_changelog() ? {
 	g.changelog = map{ 'content': changelog, 'tag': last_ref }
 }
 
+fn (g Git) get_github_api_req(method Method, url string, data string, token string) Request {
+	mut req := Request{
+		method: method
+		url:    url
+		data:   data
+	}
+
+	auth_h_v := 'Basic ' + base64.encode_str('$g.remote.user:$token')
+	req.add_header('Accept', 'application/vnd.github.v3+json')
+	req.add_header('Authorization', auth_h_v)
+
+	return req
+}
+
 fn (g Git) create_release(token string) ?Response {
 	g.pp.info('creating release')
 
@@ -194,15 +209,8 @@ fn (g Git) create_release(token string) ?Response {
 	g.pp.debug('git_api_url = $url')
 	g.pp.debug('git_req_data = \n$data')
 
-	mut req := Request{
-		method: Method.post
-		url:    url
-		data:   data
-	}
-
-	auth_h_v := 'Basic ' + base64.encode_str('$g.remote.user:$token')
-	req.add_header('Accept', 'application/vnd.github.v3+json')
-	req.add_header('Authorization', auth_h_v)
+	mut req := g.get_github_api_req(Method.post, url, data, token)
+	req.add_header('Content-Type', 'application/json')
 
 	res := req.do() or { panic(g.pp.errmsg('error while making request; got "$err.msg"')) }
 	return res
