@@ -25,6 +25,7 @@ module main
 import os
 import cli { Command, Flag }
 
+
 struct Cli {
 mut:
 	cmd Command [required]
