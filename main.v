@@ -26,26 +26,6 @@ import os
 import term
 import time
 
-fn is_valid_file(filepath string) bool {
-	return os.is_file(filepath) && os.is_readable(filepath)
-}
-
-fn resolve_path(p string) ?string {
-	if os.is_abs_path(p) {
-		if is_valid_file(p) {
-			return p
-		}
-
-		panic('file path "$p" does not exists or cannot be read')
-	}
-
-	resolved_p := os.real_path(os.join_path(os.getwd(), p))
-	if is_valid_file(resolved_p) {
-		return resolved_p
-	}
-
-	panic('resolved path "$resolved_p" does not exists or cannot be read')
-}
 
 fn start_msg(no_color bool, now time.Time, md map[string]string) {
 	vr_hi := "${md['program_name']} ${md['program_version']} ${md['target_kernel']}/${md['target_arch']}"
@@ -101,6 +81,16 @@ fn main() {
 		gh_token = env[gh_token_var].trim_space()
 		if gh_token != '' { gh_token_is_undef = false }
 	}
+
+	mut annexes_b := []string{}
+	if resolved_annexes.len > 0 {
+		for i := 0; i < resolved_annexes.len; i++ {
+			b := read_bytes_f(resolved_annexes[i]) or { panic(pp.errmsg(err.msg)) }
+			annexes_b << b
+		}
+	}
+
+	println(annexes_b)
 
 	if gh_token_is_undef {
 		panic(pp.errmsg('environment variable $gh_token_var is undefined'))
