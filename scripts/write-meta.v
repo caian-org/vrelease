@@ -23,28 +23,39 @@ fn get_last_tag() ?string {
 }
 
 fn main() {
-	dest_f := './meta.v'
-	os.rm(dest_f) or {}
+	println('>>> ${os.base(os.args[0])}')
 
-	mut meta_c := os.read_file('./_meta') or {
-		panic(errmsg('could not open meta template'))
-	}
+	here   := os.getwd()
+	meta_f := os.join_path(here, '_meta')
+	meta_t := os.join_path(here, 'meta.v')
 
-	uname := os.uname()
 	last_tag := get_last_tag() or {
 		panic(errmsg('could not get the last git tag; got "$err.msg"'))
 	}
 
-	meta_c = meta_c
-		.replace(':tag', last_tag)
-		.replace(':arch', uname.machine)
-		.replace(':kernel', uname.sysname)
+	uname  := os.uname()
+	arch   := uname.machine
+	kernel := uname.sysname
+
+	print(
+		'\n'
+		+ '* reading from: $meta_f\n'
+		+ '* writing to:   $meta_t\n'
+		+ '\n'
+		+ '* program version: $last_tag\n'
+		+ '* target_arch:     $arch\n'
+		+ '* target_kernel:   $kernel\n\n'
+	)
+
+	os.rm(meta_t) or {}
+	mut meta_c := os.read_file(meta_f) or { panic(errmsg('could not open meta template')) }
 
 	meta_c = 'module main\n\n'
 		+ '/* this file is auto-generated */\n'
 		+ meta_c
+			.replace(':tag', last_tag)
+			.replace(':arch', arch)
+			.replace(':kernel', kernel)
 
-	os.write_file(dest_f, meta_c) or {
-		panic(errmsg('could not write meta file'))
-	}
+	os.write_file(meta_t, meta_c) or { panic(errmsg('could not write meta file')) }
 }
