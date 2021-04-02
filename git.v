@@ -1,5 +1,3 @@
-// vi: ft=vlang
-
 /*
 	The person who associated a work with this deed has dedicated the work to the
 	public domain by waiving all of his or her rights to the work worldwide under
@@ -49,6 +47,12 @@ struct ReleaseBody {
 	body             string [required]
 	draft            bool   [required]
 	prerelease       bool   [required]
+}
+
+struct ReleaseResponse {
+	// there are more fields, but these are the ones that matters for now
+	html_url string
+	id       int
 }
 
 struct Git {
@@ -177,21 +181,13 @@ fn (mut g Git) get_repo_changelog() ? {
 	g.changelog = map{ 'content': changelog, 'tag': last_ref }
 }
 
-fn (g Git) get_github_api_req(method Method, url string, data string, token string) Request {
-	mut req := Request{
-		method: method
-		url:    url
-		data:   data
-	}
-
+fn (g Git) include_headers(mut req &Request, token string) {
 	auth_h_v := 'Basic ' + base64.encode_str('$g.remote.user:$token')
 	req.add_header('Accept', 'application/vnd.github.v3+json')
 	req.add_header('Authorization', auth_h_v)
-
-	return req
 }
 
-fn (g Git) create_release(token string) ?Response {
+fn (g Git) create_release(token string) ?(Response, ReleaseResponse) {
 	g.pp.info('creating release')
 
 	payload := ReleaseBody{
@@ -209,13 +205,25 @@ fn (g Git) create_release(token string) ?Response {
 	g.pp.debug('git_api_url = $url')
 	g.pp.debug('git_req_data = \n$data')
 
-	mut req := g.get_github_api_req(Method.post, url, data, token)
+	mut req := Request{
+		method: Method.post
+		url:    url
+		data:   data
+	}
+
+	g.include_headers(mut &req, token)
 	req.add_header('Content-Type', 'application/json')
 
-	res := req.do() or { panic(g.pp.errmsg('error while making request; got "$err.msg"')) }
-	return res
-}
+	res := req.do() or {
+		panic(g.pp.errmsg('error while making request; got "$err.msg"'))
+	}
 
-fn (g Git) get_release_page_url() string {
-	return 'https://github.com/$g.remote.user/$g.remote.repo/releases/tag/${g.changelog["tag"]}'
+	g.pp.debug('release_res_status_code = $res.status_code')
+	g.pp.debug('release_res_text = \n$res.text')
+
+	res_p := json.decode(ReleaseResponse, res.text) or {
+		panic(g.pp.errmsg('could not encode request response; got "$err.msg"'))
+	}
+
+	return res, res_p
 }

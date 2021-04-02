@@ -1,5 +1,3 @@
-// vi: ft=vlang
-
 /*
 	The person who associated a work with this deed has dedicated the work to the
 	public domain by waiving all of his or her rights to the work worldwide under
@@ -65,8 +63,7 @@ fn main() {
 	mut resolved_annexes := []string{}
 	if annexes.len > 0 {
 		for i := 0; i < annexes.len; i++ {
-			p := resolve_path(annexes[i]) or { panic(pp.errmsg(err.msg)) }
-			resolved_annexes << p
+			resolved_annexes << resolve_path(annexes[i]) or { panic(pp.errmsg(err.msg)) }
 		}
 	}
 
@@ -82,16 +79,6 @@ fn main() {
 		if gh_token != '' { gh_token_is_undef = false }
 	}
 
-	mut annexes_b := []string{}
-	if resolved_annexes.len > 0 {
-		for i := 0; i < resolved_annexes.len; i++ {
-			b := read_bytes_f(resolved_annexes[i]) or { panic(pp.errmsg(err.msg)) }
-			annexes_b << b
-		}
-	}
-
-	println(annexes_b)
-
 	if gh_token_is_undef {
 		panic(pp.errmsg('environment variable $gh_token_var is undefined'))
 	}
@@ -100,12 +87,20 @@ fn main() {
 	git.get_remote_info() or { panic(err.msg) }
 	git.get_repo_changelog() or { panic(err.msg) }
 
-	release_res := git.create_release(gh_token) or { panic(err.msg) }
+	release_res, release := git.create_release(gh_token) or { panic(err.msg) }
 	if release_res.status_code != 201 {
-		panic(pp.errmsg('failed with code $release_res.status_code; << $release_res.text >>'))
+		panic(pp.errmsg('failed with code $release_res.status_code;\n\n$release_res.text'))
 	}
 
-	pp.info('available @ ${pp.href(git.get_release_page_url())}')
+	pp.info('release id is $release.id')
+	pp.info('available @ ${pp.href(release.html_url)}')
+
+	mut annexes_b := []string{}
+	if resolved_annexes.len > 0 {
+		for i := 0; i < resolved_annexes.len; i++ {
+			annexes_b << read_bytes_f(resolved_annexes[i]) or { panic(pp.errmsg(err.msg)) }
+		}
+	}
 
 	duration := time.now() - started_at
 	pp.info('done; took ${pp.emph(duration.milliseconds().str() + "ms")}')
