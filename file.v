@@ -1,5 +1,3 @@
-// vi: ft=vlang
-
 /*
 	The person who associated a work with this deed has dedicated the work to the
 	public domain by waiving all of his or her rights to the work worldwide under
