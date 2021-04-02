@@ -41,34 +41,7 @@ fn start_msg(no_color bool, now time.Time, md map[string]string) {
 	println('')
 }
 
-fn main() {
-	meta_d     := get_meta_d()
-	started_at := time.now()
-	mut cli    := build_cli(meta_d)
-	cli.act()
-
-	debug_mode := cli.is_set('debug')
-	no_color   := cli.is_set('no-color')
-	limit      := cli.get_limit()
-	annexes    := cli.get_annexes()
-
-	pp := PrettyPrint{ debug_mode, no_color }
-	start_msg(no_color, started_at, meta_d)
-
-	pp.debug('flag_debug_mode = $debug_mode')
-	pp.debug('flag_no_color = $no_color')
-	pp.debug('flag_limit = $limit')
-	pp.debug('flag_attach = $annexes')
-
-	mut resolved_annexes := []string{}
-	if annexes.len > 0 {
-		for i := 0; i < annexes.len; i++ {
-			resolved_annexes << resolve_path(annexes[i]) or { panic(pp.errmsg(err.msg)) }
-		}
-	}
-
-	pp.debug('resolved_annexes = $resolved_annexes')
-
+fn get_github_token() (bool, string) {
 	env := os.environ()
 	mut gh_token := ''
 	mut gh_token_is_undef := true
@@ -79,8 +52,39 @@ fn main() {
 		if gh_token != '' { gh_token_is_undef = false }
 	}
 
+	return gh_token_is_undef, gh_token
+}
+
+fn main() {
+	started_at := time.now()
+	meta_d     := get_meta_d()
+
+	mut cli := build_cli(meta_d)
+	cli.act()
+
+	debug_mode := cli.is_set('debug')
+	no_color   := cli.is_set('no-color')
+	limit      := cli.get_limit()
+	annexes    := cli.get_annexes()
+
+	pp := PrettyPrint{ debug_mode, no_color }
+	pp.debug('flag_debug_mode = $debug_mode')
+	pp.debug('flag_no_color = $no_color')
+	pp.debug('flag_limit = $limit')
+	pp.debug('flag_attach = $annexes')
+	start_msg(no_color, started_at, meta_d)
+
+	mut resolved_annexes := []string{}
+	if annexes.len > 0 {
+		for i := 0; i < annexes.len; i++ {
+			resolved_annexes << resolve_path(annexes[i]) or { panic(pp.errmsg(err.msg)) }
+		}
+	}
+	pp.debug('resolved_annexes = $resolved_annexes')
+
+	gh_token_is_undef, gh_token := get_github_token()
 	if gh_token_is_undef {
-		panic(pp.errmsg('environment variable $gh_token_var is undefined'))
+		panic(pp.errmsg('github token is undefined'))
 	}
 
 	mut git := build_git(pp, debug_mode, limit)
@@ -91,7 +95,6 @@ fn main() {
 	if release_res.status_code != 201 {
 		panic(pp.errmsg('failed with code $release_res.status_code;\n\n$release_res.text'))
 	}
-
 	pp.info('release id is $release.id')
 	pp.info('available @ ${pp.href(release.html_url)}')
 
