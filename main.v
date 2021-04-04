@@ -26,8 +26,12 @@ import time
 
 
 fn start_msg(no_color bool, now time.Time, md map[string]string) {
-	vr_hi := "${md['program_name']} ${md['program_version']} ${md['target_kernel']}/${md['target_arch']}"
-	vr_at := 'program has started @ ${now.str()}'
+	p_name    := md['program_name']
+	p_version := md['program_version']
+	t_kernel  := md['target_kernel']
+	t_arch    := md['target_arch']
+	vr_hi     := '$p_name $p_version $t_kernel/$t_arch'
+	vr_at     := 'program has started @ ${now.str()}'
 
 	mut m := []string{}
 	if no_color {
@@ -113,5 +117,5 @@ fn main() {
 	}
 
 	duration := time.now() - started_at
-	pp.info('done; took ${pp.emph(duration.milliseconds().str() + "ms")}')
+	pp.info('done; took ${pp.emph(duration.milliseconds().str() + 'ms')}')
 }

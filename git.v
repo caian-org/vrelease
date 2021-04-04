@@ -22,7 +22,7 @@ module main
 
 import os
 import json
-import net.http { Method, Request, Response }
+import net.http { Request, Response }
 
 
 enum Protocol {
@@ -65,11 +65,11 @@ mut:
 
 fn build_git(pp PrettyPrint, debug_mode bool, limit int) Git {
 	return Git{
-		pp: pp,
+		pp:         pp,
 		debug_mode: debug_mode
-		limit: limit
-		remote: GitRemote{}
-		changelog: map{}
+		limit:      limit
+		remote:     GitRemote{}
+		changelog:  map{}
 	}
 }
 
@@ -192,8 +192,10 @@ fn (g Git) upload_asset(token string, filename string, asset_data []byte) ?Respo
 	mut req := Request{ url: url, data: asset_data.bytestr() }
 	g.include_headers(mut &req, token)
 	req.add_header('Content-Type', 'application/binary')
+	res := req.do() or {
+		panic(g.pp.errmsg('error while making request; got "$err.msg"'))
+	}
 
-	res := req.do() or { panic(g.pp.errmsg('error while making request; got "$err.msg"')) }
 	g.pp.debug('git_upload_res_status_code = $res.status_code')
 	g.pp.debug('git_upload_res_text = \n$res.text')
 
@@ -213,18 +215,17 @@ fn (mut g Git) create_release(token string) ?(Response, ReleaseResponse) {
 
 	url := 'https://api.github.com/repos/$g.remote.user/$g.remote.repo/releases'
 	data := json.encode(payload)
-	mut req := Request{
-		method:  .post
-		url:     url
-		data:    data
-	}
+	mut req := Request{ method: .post, url: url, data data }
 
 	g.pp.debug('git_release_url = $url')
 	g.pp.debug('git_release_req_data = \n$data')
 
 	g.include_headers(mut &req, token)
 	req.add_header('Content-Type', 'application/json')
-	res := req.do() or { panic(g.pp.errmsg('error while making request; got "$err.msg"')) }
+	res := req.do() or {
+		panic(g.pp.errmsg('error while making request; got "$err.msg"'))
+	}
+
 	g.pp.debug('git_release_res_status_code = $res.status_code')
 	g.pp.debug('git_release_res_text = \n$res.text')
 
