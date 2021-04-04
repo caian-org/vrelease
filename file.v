@@ -21,7 +21,6 @@
 module main
 
 import os
-import encoding.base64
 
 
 fn is_valid_file(filepath string) bool {
@@ -43,9 +42,4 @@ fn resolve_path(p string) ?string {
 	}
 
 	panic('resolved path "$resolved_p" does not exists or cannot be read')
-}
-
-fn read_bytes_f(filepath string) ?string {
-	b := os.read_bytes(filepath) or { panic('could not read file "$filepath"') }
-	return base64.encode(b)
 }

@@ -22,8 +22,6 @@ module main
 
 import os
 import json
-import encoding.base64
-
 import net.http { Method, Request, Response }
 
 
@@ -62,6 +60,7 @@ struct Git {
 mut:
 	remote     GitRemote
 	changelog  map[string]string
+	release_id int
 }
 
 fn build_git(pp PrettyPrint, debug_mode bool, limit int) Git {
@@ -106,9 +105,7 @@ fn (mut g Git) get_remote_info() ? {
 
 			user = segs[0]
 			repo = segs[1]
-
-		}
-		else {
+		} else {
 			segs := uri.split('/')
 			if segs.len != 5 { panic(mf) }
 
@@ -131,7 +128,6 @@ fn (mut g Git) get_repo_changelog() ? {
 	g.pp.debug('git_tags_sorted = ${json.encode(res.output)}')
 
 	mut tags := res.output.split('\n')
-
 	if tags.len <= 1 { panic(nt) }
 	tags.pop()
 
@@ -182,14 +178,30 @@ fn (mut g Git) get_repo_changelog() ? {
 }
 
 fn (g Git) include_headers(mut req &Request, token string) {
-	auth_h_v := 'Basic ' + base64.encode_str('$g.remote.user:$token')
 	req.add_header('Accept', 'application/vnd.github.v3+json')
-	req.add_header('Authorization', auth_h_v)
+	req.add_header('Authorization', 'token ' + token)
 }
 
-fn (g Git) create_release(token string) ?(Response, ReleaseResponse) {
-	g.pp.info('creating release')
+fn (g Git) upload_asset(token string, filename string, asset_data []byte) ?Response {
+	g.pp.info('uploading asset')
 
+	url := 'https://uploads.github.com/repos'
+		+ '/$g.remote.user/$g.remote.repo/releases/$g.release_id/assets?name=$filename'
+	g.pp.debug('git_upload_asset_url = $url')
+
+	mut req := Request{ url: url, data: asset_data.bytestr() }
+	g.include_headers(mut &req, token)
+	req.add_header('Content-Type', 'application/binary')
+
+	res := req.do() or { panic(g.pp.errmsg('error while making request; got "$err.msg"')) }
+	g.pp.debug('git_upload_res_status_code = $res.status_code')
+	g.pp.debug('git_upload_res_text = \n$res.text')
+
+	return res
+}
+
+fn (mut g Git) create_release(token string) ?(Response, ReleaseResponse) {
+	g.pp.info('creating release')
 	payload := ReleaseBody{
 		target_commitish: 'master'
 		tag_name:   g.changelog['tag']
@@ -201,29 +213,25 @@ fn (g Git) create_release(token string) ?(Response, ReleaseResponse) {
 
 	url := 'https://api.github.com/repos/$g.remote.user/$g.remote.repo/releases'
 	data := json.encode(payload)
-
-	g.pp.debug('git_api_url = $url')
-	g.pp.debug('git_req_data = \n$data')
-
 	mut req := Request{
-		method: Method.post
-		url:    url
-		data:   data
+		method:  .post
+		url:     url
+		data:    data
 	}
+
+	g.pp.debug('git_release_url = $url')
+	g.pp.debug('git_release_req_data = \n$data')
 
 	g.include_headers(mut &req, token)
 	req.add_header('Content-Type', 'application/json')
-
-	res := req.do() or {
-		panic(g.pp.errmsg('error while making request; got "$err.msg"'))
-	}
-
-	g.pp.debug('release_res_status_code = $res.status_code')
-	g.pp.debug('release_res_text = \n$res.text')
+	res := req.do() or { panic(g.pp.errmsg('error while making request; got "$err.msg"')) }
+	g.pp.debug('git_release_res_status_code = $res.status_code')
+	g.pp.debug('git_release_res_text = \n$res.text')
 
 	res_p := json.decode(ReleaseResponse, res.text) or {
 		panic(g.pp.errmsg('could not encode request response; got "$err.msg"'))
 	}
 
+	g.release_id = res_p.id
 	return res, res_p
 }

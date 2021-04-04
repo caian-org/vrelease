@@ -29,16 +29,16 @@ fn start_msg(no_color bool, now time.Time, md map[string]string) {
 	vr_hi := "${md['program_name']} ${md['program_version']} ${md['target_kernel']}/${md['target_arch']}"
 	vr_at := 'program has started @ ${now.str()}'
 
-	println('')
+	mut m := []string{}
 	if no_color {
-		println(vr_hi)
-		println(vr_at)
+		m << vr_hi
+		m << vr_at
 	}
 	else {
-		println(term.bold(vr_hi))
-		println(term.gray(vr_at))
+		m << term.bold(vr_hi)
+		m << term.gray(vr_at)
 	}
-	println('')
+	println('\n${m.join('\n')}\n')
 }
 
 fn get_github_token() (bool, string) {
@@ -80,6 +80,7 @@ fn main() {
 			resolved_annexes << resolve_path(annexes[i]) or { panic(pp.errmsg(err.msg)) }
 		}
 	}
+
 	pp.debug('resolved_annexes = $resolved_annexes')
 
 	gh_token_is_undef, gh_token := get_github_token()
@@ -95,13 +96,19 @@ fn main() {
 	if release_res.status_code != 201 {
 		panic(pp.errmsg('failed with code $release_res.status_code;\n\n$release_res.text'))
 	}
+
 	pp.info('release id is $release.id')
 	pp.info('available @ ${pp.href(release.html_url)}')
 
-	mut annexes_b := []string{}
 	if resolved_annexes.len > 0 {
 		for i := 0; i < resolved_annexes.len; i++ {
-			annexes_b << read_bytes_f(resolved_annexes[i]) or { panic(pp.errmsg(err.msg)) }
+			filep := resolved_annexes[i]
+			filen := os.base(filep)
+			asset_data := os.read_bytes(filep) or {
+				pp.warn('could not read file "$filen"')
+				continue
+			}
+			git.upload_asset(gh_token, filen, asset_data) or { panic(pp.errmsg(err.msg)) }
 		}
 	}
 
