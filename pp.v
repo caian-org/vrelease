@@ -54,10 +54,17 @@ fn (p PrettyPrint) href(txt string) string {
 
 fn (p PrettyPrint) info(txt string) {
 	if p.no_color {
-		println('=> ${txt}')
-	}
-	else {
+		println('=> $txt')
+	} else {
 		println(term.bright_blue('=> ') + txt)
+	}
+}
+
+fn (p PrettyPrint) warn(txt string) {
+	if p.no_color {
+		println('=> $txt')
+	} else {
+		println(term.yellow('=> ') + txt)
 	}
 }
 
@@ -65,8 +72,7 @@ fn (p PrettyPrint) debug(txt string) {
 	if p.debug_mode {
 		if p.no_color {
 			println('==> [DEBUG] $txt')
-		}
-		else {
+		} else {
 			println(term.yellow('==> ') + term.bold('[DEBUG] ') + txt)
 		}
 	}
