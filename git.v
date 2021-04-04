@@ -215,7 +215,7 @@ fn (mut g Git) create_release(token string) ?(Response, ReleaseResponse) {
 
 	url := 'https://api.github.com/repos/$g.remote.user/$g.remote.repo/releases'
 	data := json.encode(payload)
-	mut req := Request{ method: .post, url: url, data data }
+	mut req := Request{ method: .post, url: url, data: data }
 
 	g.pp.debug('git_release_url = $url')
 	g.pp.debug('git_release_req_data = \n$data')
