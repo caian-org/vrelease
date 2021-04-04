@@ -19,15 +19,11 @@ build: clean
 	@printf "\n"
 	@printf "\n>>> write-meta\n"
 	$(VC) run scripts/write-meta.v
-	@printf "\n>>> compiling\n"
+	@printf "\n>>> compile\n"
 	$(VC) $(VFLAGS) .
 	@printf "\n* binary size: "
 	@du -h $(ARTIFACT) | cut -f -1
+	@printf "\nDONE\n"
 
 build-release: VFLAGS += -prod
 build-release: build
-build-release:
-	@printf "\n\n>>> striping binary\n"
-	strip -SXNx $(ARTIFACT)
-	@printf "\n* new binary size: "
-	@du -h $(ARTIFACT) | cut -f -1
