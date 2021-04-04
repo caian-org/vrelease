@@ -1,5 +1,3 @@
-// vi: ft=vlang
-
 import os
 import term
 
@@ -23,8 +21,6 @@ fn get_last_tag() ?string {
 }
 
 fn main() {
-	println('>>> ${os.base(os.args[0])}')
-
 	here   := os.getwd()
 	meta_f := os.join_path(here, '_meta')
 	meta_t := os.join_path(here, 'meta.v')
