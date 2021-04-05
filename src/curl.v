@@ -31,6 +31,11 @@ mut:
 	headers map[string]string
 }
 
+struct CURLResponse {
+	code int
+	body string
+}
+
 fn build_curl(pp PrettyPrint, url string, data string) CURLCall {
 	return { pp: pp, url: url, data: data, headers: map{} }
 }
@@ -45,21 +50,25 @@ fn (c CURLCall) build_base_cmd() string {
 		header_flags << '-H "$header_name: $header_value"'
 	}
 
-	return 'curl -s -X POST ${header_flags.join(' ')} $c.url'
+	return 'curl -s -w "%{http_code}" -X POST ${header_flags.join(' ')} $c.url'
 }
 
-fn (c CURLCall) run(cmd string) ?string {
-	res := os.execute_or_panic('git remote get-url --all origin')
-	return res.output
+fn (c CURLCall) run(cmd string) ?CURLResponse {
+	res  := os.execute_or_panic(cmd)
+	segs := res.output.trim_space().split('\n')
+	return CURLResponse{
+		code: segs.pop().int()
+		body: segs.join('\n')
+	}
 }
 
-fn (mut c CURLCall) post_json() ?string {
+fn (mut c CURLCall) post_json() ?CURLResponse {
 	c.headers['Content-Type'] = 'application/json'
-	cmd := c.build_base_cmd() + ' -d $c.data'
+	cmd := c.build_base_cmd() + ' -d "$c.data"'
 	return c.run(cmd)
 }
 
-fn (mut c CURLCall) post_multipart() ?string {
+fn (mut c CURLCall) post_multipart() ?CURLResponse {
 	c.headers['Content-Type'] = 'application/octet-stream'
 	cmd := c.build_base_cmd() + ' --data-binary @"$c.data"'
 	return c.run(cmd)
