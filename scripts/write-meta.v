@@ -21,9 +21,10 @@ fn get_last_tag() ?string {
 }
 
 fn main() {
-	here   := os.getwd()
-	meta_f := os.join_path(here, '_meta')
-	meta_t := os.join_path(here, 'meta.v')
+	here    := os.getwd()
+	src_dir := os.join_path(here, 'src')
+	meta_f  := os.join_path(src_dir, '_meta')
+	meta_t  := os.join_path(src_dir, 'meta.v')
 
 	last_tag := get_last_tag() or {
 		panic(errmsg('could not get the last git tag; got "$err.msg"'))

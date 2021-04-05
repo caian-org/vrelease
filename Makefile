@@ -3,6 +3,7 @@
 VC = v
 VFLAGS =
 
+SRC_DIR = src
 ARTIFACT = vrelease
 
 
@@ -20,7 +21,7 @@ build: clean
 	@printf "\n>>> write-meta\n"
 	$(VC) run scripts/write-meta.v
 	@printf "\n>>> compile\n"
-	$(VC) $(VFLAGS) .
+	$(VC) $(VFLAGS) $(SRC_DIR) -o $(ARTIFACT)
 	@printf "\n* binary size: "
 	@du -h $(ARTIFACT) | cut -f -1
 	@printf "\nDONE\n"
