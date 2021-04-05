@@ -1,7 +1,7 @@
 /*       DO NOT TOUCH IT       */
 
 fn get_meta_d() map[string]string {
-	return map{
+	return {
 		'program_name': 'vrelease',
 		'program_version': ':tag',
 		'program_description': 'KISS solution to easily create project releases'

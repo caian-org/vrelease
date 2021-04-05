@@ -64,7 +64,7 @@ mut:
 }
 
 fn build_git(pp PrettyPrint, debug_mode bool, limit int) Git {
-	return Git{
+	return {
 		pp:         pp,
 		debug_mode: debug_mode
 		limit:      limit
@@ -88,7 +88,6 @@ fn (mut g Git) get_remote_info() ? {
 
 	xtract := fn (g Git, p Protocol, uri string) (string, string) {
 		mf := g.pp.errmsg('malformed remote git URI; got "$uri"')
-
 		if !uri.contains('/') { panic(mf) }
 
 		mut user := ''
@@ -155,7 +154,6 @@ fn (mut g Git) get_repo_changelog() ? {
 	mut changelog := ''
 	for i := 0; i < limit; i++ {
 		log := logs[i]
-
 		sha := log[0 .. 40]
 		msg := log[41 .. log.len]
 

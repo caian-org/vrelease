@@ -37,8 +37,7 @@ fn start_msg(no_color bool, now time.Time, md map[string]string) {
 	if no_color {
 		m << vr_hi
 		m << vr_at
-	}
-	else {
+	} else {
 		m << term.bold(vr_hi)
 		m << term.gray(vr_at)
 	}
