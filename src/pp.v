@@ -35,7 +35,7 @@ fn (p PrettyPrint) errmsg(txt string) string {
 
 fn (p PrettyPrint) emph(txt string) string {
 	if p.no_color { return txt }
-	return term.green(txt)
+	return term.bright_cyan(txt)
 }
 
 fn (p PrettyPrint) href(txt string) string {
@@ -43,27 +43,49 @@ fn (p PrettyPrint) href(txt string) string {
 	return term.underline(txt)
 }
 
-fn (p PrettyPrint) info(txt string) {
+fn (p PrettyPrint) success(txt string) string {
+	if p.no_color { return txt }
+	return term.green(txt)
+}
+
+fn (p PrettyPrint) fail(txt string) string {
+	if p.no_color { return txt }
+	return term.red(txt)
+}
+
+fn (p PrettyPrint) puts(txt string, nl bool, c fn (t string) string) {
+	a := '=> '
+	f := if p.debug_mode || !nl { println } else { print }
 	if p.no_color {
-		println('=> $txt')
+		f(a + txt)
 	} else {
-		println(term.bright_blue('=> ') + txt)
+		f(c(a) + txt)
 	}
+}
+
+fn (p PrettyPrint) info(txt string) {
+	p.puts(txt, false, fn (t string) string { return term.bright_blue(t) })
+}
+
+fn (p PrettyPrint) info_nl(txt string) {
+	p.puts(txt, true, fn (t string) string { return term.bright_blue(t) })
 }
 
 fn (p PrettyPrint) warn(txt string) {
-	if p.no_color {
-		println('=> $txt')
-	} else {
-		println(term.yellow('=> ') + txt)
-	}
+	p.puts(txt, false, fn (t string) string { return term.yellow(t) })
 }
 
-fn (p PrettyPrint) debug(txt string) {
+fn (p PrettyPrint) debug(key string, txt string) {
 	if !p.debug_mode { return }
 	if p.no_color {
-		println('==> [DEBUG] $txt')
+		println('===> [DEBUG] $key = $txt')
 	} else {
-		println(term.yellow('==> ') + term.bold('[DEBUG] ') + txt)
+		println(
+			term.gray('===> ')
+			+ term.bold('[DEBUG] ')
+			+ key
+			+ term.bright_red(' = ')
+			+ txt
+		)
 	}
 }

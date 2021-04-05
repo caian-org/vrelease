@@ -22,7 +22,6 @@ module main
 
 import os
 import json
-import net.http { Request, Response }
 
 
 enum Protocol {
@@ -54,37 +53,35 @@ struct ReleaseResponse {
 }
 
 struct Git {
-	pp         PrettyPrint [required]
-	debug_mode bool        [required]
-	limit      int         [required]
+	pp    PrettyPrint [required]
+	limit int         [required]
 mut:
 	remote     GitRemote
 	changelog  map[string]string
 	release_id int
 }
 
-fn build_git(pp PrettyPrint, debug_mode bool, limit int) Git {
+fn git_build(pp PrettyPrint, limit int) Git {
 	return {
-		pp:         pp,
-		debug_mode: debug_mode
-		limit:      limit
-		remote:     GitRemote{}
-		changelog:  map{}
+		pp:        pp,
+		limit:     limit
+		remote:    GitRemote{}
+		changelog: map{}
 	}
 }
 
 fn (mut g Git) get_remote_info() ? {
 	res := os.execute_or_panic('git remote get-url --all origin')
-	g.pp.debug('git_remote_info = ${json.encode(res.output)}')
+	g.pp.debug('git_remote_info', '${json.encode(res.output)}')
 
 	out := res.output.trim_space().split('\n')
 	uri := out[0]
-	g.pp.debug('git_chosed_uri = $uri')
+	g.pp.debug('git_chosed_uri', '$uri')
 
 	mut protocol := Protocol.ssh
 	if uri.starts_with('http://') { protocol = Protocol.http }
 	if uri.starts_with('https://') { protocol = Protocol.https }
-	g.pp.debug('git_detected_protocol = $protocol')
+	g.pp.debug('git_detected_protocol', '$protocol')
 
 	xtract := fn (g Git, p Protocol, uri string) (string, string) {
 		mf := g.pp.errmsg('malformed remote git URI; got "$uri"')
@@ -124,7 +121,7 @@ fn (mut g Git) get_repo_changelog() ? {
 	nt := g.pp.errmsg('no tags found')
 
 	mut res := os.execute_or_panic('git tag --sort=committerdate')
-	g.pp.debug('git_tags_sorted = ${json.encode(res.output)}')
+	g.pp.debug('git_tags_sorted', '${json.encode(res.output)}')
 
 	mut tags := res.output.split('\n')
 	if tags.len <= 1 { panic(nt) }
@@ -132,7 +129,7 @@ fn (mut g Git) get_repo_changelog() ? {
 
 	if tags[0].trim_space() == '' { panic(nt) }
 	last_ref := tags[tags.len - 1].trim_space()
-	g.pp.debug('git_found_tags = $tags')
+	g.pp.debug('git_found_tags', '$tags')
 
 	mut sec_last_ref := 'master'
 	if tags.len >= 2 {
@@ -145,11 +142,11 @@ fn (mut g Git) get_repo_changelog() ? {
 	mut logs := res.output.split('\n')
 	if logs.len <= 1 { panic('no entries') }
 	logs.pop()
-	g.pp.debug('git_logs = \n$logs')
+	g.pp.debug('git_logs', '\n$logs')
 
 	mut limit := if logs.len > g.limit { g.limit } else { logs.len }
 	limit = if g.limit == -1 { logs.len } else { limit }
-	g.pp.debug('git_chosed_commit_limit = $limit')
+	g.pp.debug('git_chosed_commit_limit', '$limit')
 
 	mut changelog := ''
 	for i := 0; i < limit; i++ {
@@ -171,37 +168,36 @@ fn (mut g Git) get_repo_changelog() ? {
 		+ ommited_commit_msg
 		+ '<ul>$changelog</ul>'
 
-	g.pp.debug('generated_changelog = \n$changelog')
+	g.pp.debug('generated_changelog', '\n$changelog')
 	g.changelog = map{ 'content': changelog, 'tag': last_ref }
 }
 
-fn (g Git) include_headers(mut req &Request, token string) {
-	req.add_header('Accept', 'application/vnd.github.v3+json')
-	req.add_header('Authorization', 'token ' + token)
+fn (g Git) get_call(url string, token string, data string) CURLCall {
+	mut call := build_curl(g.pp, url, data)
+	call.add_header('Accept', 'application/vnd.github.v3+json')
+	call.add_header('Authorization', 'token ' + token)
+	return call
 }
 
-fn (g Git) upload_asset(token string, filename string, asset_data []byte) ?Response {
-	g.pp.info('uploading asset')
-
+fn (g Git) upload_asset(token string, filepath string) ?CURLResponse {
 	url := 'https://uploads.github.com/repos'
-		+ '/$g.remote.user/$g.remote.repo/releases/$g.release_id/assets?name=$filename'
-	g.pp.debug('git_upload_asset_url = $url')
+		+ '/$g.remote.user/$g.remote.repo'
+		+ '/releases/$g.release_id/assets?name=${os.base(filepath)}'
 
-	mut req := Request{ url: url, data: asset_data.bytestr() }
-	g.include_headers(mut &req, token)
-	req.add_header('Content-Type', 'application/binary')
-	res := req.do() or {
+	g.pp.debug('git_upload_asset_url', '$url')
+
+	mut req := g.get_call(url, token, filepath)
+	res := req.post_multipart() or {
 		panic(g.pp.errmsg('error while making request; got "$err.msg"'))
 	}
 
-	g.pp.debug('git_upload_res_status_code = $res.status_code')
-	g.pp.debug('git_upload_res_text = \n$res.text')
-
+	g.pp.debug('git_upload_res_status_code', '$res.code')
+	g.pp.debug('git_upload_res_text', '\n$res.body')
 	return res
 }
 
-fn (mut g Git) create_release(token string) ?(Response, ReleaseResponse) {
-	g.pp.info('creating release')
+fn (mut g Git) create_release(token string) ?(CURLResponse, ReleaseResponse) {
+	g.pp.info_nl('creating release... ')
 	payload := ReleaseBody{
 		target_commitish: 'master'
 		tag_name:   g.changelog['tag']
@@ -211,23 +207,51 @@ fn (mut g Git) create_release(token string) ?(Response, ReleaseResponse) {
 		prerelease: false
 	}
 
-	url := 'https://api.github.com/repos/$g.remote.user/$g.remote.repo/releases'
+	url  := 'https://api.github.com/repos/$g.remote.user/$g.remote.repo/releases'
 	data := json.encode(payload)
-	mut req := Request{ method: .post, url: url, data: data }
+	g.pp.debug('git_release_url', '$url')
+	g.pp.debug('git_release_req_data', '$data')
 
-	g.pp.debug('git_release_url = $url')
-	g.pp.debug('git_release_req_data = \n$data')
+	// should I escape each special character so the shell doesn´t complain
+	// or write to a file and pass to CURL via STDIN?
+	escaped_data := data.split('')
+		.map(fn (s string) string {
+			return match s {
+				'/'  { '\/' }
+				'>'  { '\>' }
+				'<'  { '\<' }
+				'['  { '\[' }
+				']'  { '\]' }
+				'('  { '\(' }
+				')'  { '\)' }
+				';'  { '\;' }
+				'|'  { '\|' }
+				'^'  { '\^' }
+				'~'  { '\~' }
+				'!'  { '\!' }
+				'?'  { '\?' }
+				'#'  { '\#' }
+				'$'  { '\$' }
+				'%'  { '\%' }
+				'&'  { '\&' }
+				'*'  { '\*' }
+				'.'  { '\.' }
+				'`'  { '\`' }
+				'"'  { '\\"' }
+				'\\' { '\\\\' }
+				else { s }
+			}
+		})
+		.join('')
 
-	g.include_headers(mut &req, token)
-	req.add_header('Content-Type', 'application/json')
-	res := req.do() or {
+	mut req := g.get_call(url, token, escaped_data)
+	res := req.post_json() or {
 		panic(g.pp.errmsg('error while making request; got "$err.msg"'))
 	}
 
-	g.pp.debug('git_release_res_status_code = $res.status_code')
-	g.pp.debug('git_release_res_text = \n$res.text')
-
-	res_p := json.decode(ReleaseResponse, res.text) or {
+	g.pp.debug('git_release_res_status_code', '$res.code')
+	g.pp.debug('git_release_res_text', '\n$res.body')
+	res_p := json.decode(ReleaseResponse, res.body) or {
 		panic(g.pp.errmsg('could not encode request response; got "$err.msg"'))
 	}
 

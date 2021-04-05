@@ -62,8 +62,9 @@ fn main() {
 	started_at := time.now()
 	meta_d     := get_meta_d()
 
-	mut cli := build_cli(meta_d)
-	cli.act()
+	mut cli   := cli_build(meta_d)
+	must_exit := cli.act()
+	if must_exit { exit(0) }
 
 	debug_mode := cli.is_set('debug')
 	no_color   := cli.is_set('no-color')
@@ -71,48 +72,46 @@ fn main() {
 	annexes    := cli.get_annexes()
 
 	pp := PrettyPrint{ debug_mode, no_color }
-	pp.debug('flag_debug_mode = $debug_mode')
-	pp.debug('flag_no_color = $no_color')
-	pp.debug('flag_limit = $limit')
-	pp.debug('flag_attach = $annexes')
+	pp.debug('flag_debug_mode', '$debug_mode')
+	pp.debug('flag_no_color', '$no_color')
+	pp.debug('flag_limit', '$limit')
+	pp.debug('flag_attach', '$annexes')
 	start_msg(no_color, started_at, meta_d)
 
 	mut resolved_annexes := []string{}
-	if annexes.len > 0 {
-		for i := 0; i < annexes.len; i++ {
-			resolved_annexes << resolve_path(annexes[i]) or { panic(pp.errmsg(err.msg)) }
-		}
+	for annex in annexes {
+		resolved_annexes << file_resolve_path(annex) or { panic(pp.errmsg(err.msg)) }
 	}
 
-	pp.debug('resolved_annexes = $resolved_annexes')
+	pp.debug('resolved_annexes', '$resolved_annexes')
 
 	gh_token_is_undef, gh_token := get_github_token()
 	if gh_token_is_undef {
 		panic(pp.errmsg('github token is undefined'))
 	}
 
-	mut git := build_git(pp, debug_mode, limit)
+	mut git := git_build(pp, limit)
 	git.get_remote_info() or { panic(err.msg) }
 	git.get_repo_changelog() or { panic(err.msg) }
 
 	release_res, release := git.create_release(gh_token) or { panic(err.msg) }
-	if release_res.status_code != 201 {
-		panic(pp.errmsg('failed with code $release_res.status_code;\n\n$release_res.text'))
+	if release_res.code != 201 {
+		println(pp.fail('failed'))
+		panic(pp.errmsg('failed with code $release_res.code;\n\n$release_res.body'))
 	}
 
+	println(pp.success('succeed'))
 	pp.info('release id is $release.id')
 	pp.info('available @ ${pp.href(release.html_url)}')
 
-	if resolved_annexes.len > 0 {
-		for i := 0; i < resolved_annexes.len; i++ {
-			filep := resolved_annexes[i]
-			filen := os.base(filep)
-			asset_data := os.read_bytes(filep) or {
-				pp.warn('could not read file "$filen"')
-				continue
-			}
-			git.upload_asset(gh_token, filen, asset_data) or { panic(pp.errmsg(err.msg)) }
+	for annex in resolved_annexes {
+		pp.info_nl('uploading asset "${os.base(annex)}"... ')
+		git.upload_asset(gh_token, annex) or {
+			println(pp.fail('failed'))
+			panic(pp.errmsg(err.msg))
 		}
+
+		println(pp.success('succeed'))
 	}
 
 	duration := time.now() - started_at

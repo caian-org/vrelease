@@ -29,40 +29,7 @@ mut:
 	cmd Command [required]
 }
 
-fn (c Cli) f() []Flag {
-	return c.cmd.flags
-}
-
-fn (c Cli) is_set(flag string) bool {
-	return c.f().get_bool(flag) or { false }
-}
-
-fn (c Cli) get_limit() int {
-	v := c.f().get_int('limit') or { 0 }
-	if v <= 0 { return -1 }
-	return v
-}
-
-fn (c Cli) get_annexes() []string {
-	return c.f().get_strings('attach') or { []string{} }
-}
-
-fn (mut c Cli) act() {
-	c.cmd.setup()
-	c.cmd.parse(os.args)
-
-	if c.is_set('help') {
-		c.cmd.execute_help()
-		exit(0)
-	}
-
-	if c.is_set('version') {
-		println(c.cmd.version)
-		exit(0)
-	}
-}
-
-fn build_cli(md map[string]string) Cli {
+fn cli_build(md map[string]string) Cli {
 	mut cmd := Command{
 		name:            md['program_name']
 		description:     md['program_description']
@@ -115,4 +82,39 @@ fn build_cli(md map[string]string) Cli {
 	})
 
 	return Cli{ cmd }
+}
+
+fn (c Cli) f() []Flag {
+	return c.cmd.flags
+}
+
+fn (c Cli) is_set(flag string) bool {
+	return c.f().get_bool(flag) or { false }
+}
+
+fn (c Cli) get_limit() int {
+	v := c.f().get_int('limit') or { 0 }
+	if v <= 0 { return -1 }
+	return v
+}
+
+fn (c Cli) get_annexes() []string {
+	return c.f().get_strings('attach') or { []string{} }
+}
+
+fn (mut c Cli) act() bool {
+	c.cmd.setup()
+	c.cmd.parse(os.args)
+
+	if c.is_set('help') {
+		c.cmd.execute_help()
+		return true
+	}
+
+	if c.is_set('version') {
+		println(c.cmd.version)
+		return true
+	}
+
+	return false
 }
