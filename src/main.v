@@ -72,10 +72,10 @@ fn main() {
 	annexes    := cli.get_annexes()
 
 	pp := PrettyPrint{ debug_mode, no_color }
-	pp.debug('flag_debug_mode = $debug_mode')
-	pp.debug('flag_no_color = $no_color')
-	pp.debug('flag_limit = $limit')
-	pp.debug('flag_attach = $annexes')
+	pp.debug('flag_debug_mode', '$debug_mode')
+	pp.debug('flag_no_color', '$no_color')
+	pp.debug('flag_limit', '$limit')
+	pp.debug('flag_attach', '$annexes')
 	start_msg(no_color, started_at, meta_d)
 
 	mut resolved_annexes := []string{}
@@ -83,7 +83,7 @@ fn main() {
 		resolved_annexes << file_resolve_path(annex) or { panic(pp.errmsg(err.msg)) }
 	}
 
-	pp.debug('resolved_annexes = $resolved_annexes')
+	pp.debug('resolved_annexes', '$resolved_annexes')
 
 	gh_token_is_undef, gh_token := get_github_token()
 	if gh_token_is_undef {

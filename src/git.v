@@ -72,16 +72,16 @@ fn git_build(pp PrettyPrint, limit int) Git {
 
 fn (mut g Git) get_remote_info() ? {
 	res := os.execute_or_panic('git remote get-url --all origin')
-	g.pp.debug('git_remote_info = ${json.encode(res.output)}')
+	g.pp.debug('git_remote_info', '${json.encode(res.output)}')
 
 	out := res.output.trim_space().split('\n')
 	uri := out[0]
-	g.pp.debug('git_chosed_uri = $uri')
+	g.pp.debug('git_chosed_uri', '$uri')
 
 	mut protocol := Protocol.ssh
 	if uri.starts_with('http://') { protocol = Protocol.http }
 	if uri.starts_with('https://') { protocol = Protocol.https }
-	g.pp.debug('git_detected_protocol = $protocol')
+	g.pp.debug('git_detected_protocol', '$protocol')
 
 	xtract := fn (g Git, p Protocol, uri string) (string, string) {
 		mf := g.pp.errmsg('malformed remote git URI; got "$uri"')
@@ -121,7 +121,7 @@ fn (mut g Git) get_repo_changelog() ? {
 	nt := g.pp.errmsg('no tags found')
 
 	mut res := os.execute_or_panic('git tag --sort=committerdate')
-	g.pp.debug('git_tags_sorted = ${json.encode(res.output)}')
+	g.pp.debug('git_tags_sorted', '${json.encode(res.output)}')
 
 	mut tags := res.output.split('\n')
 	if tags.len <= 1 { panic(nt) }
@@ -129,7 +129,7 @@ fn (mut g Git) get_repo_changelog() ? {
 
 	if tags[0].trim_space() == '' { panic(nt) }
 	last_ref := tags[tags.len - 1].trim_space()
-	g.pp.debug('git_found_tags = $tags')
+	g.pp.debug('git_found_tags', '$tags')
 
 	mut sec_last_ref := 'master'
 	if tags.len >= 2 {
@@ -142,11 +142,11 @@ fn (mut g Git) get_repo_changelog() ? {
 	mut logs := res.output.split('\n')
 	if logs.len <= 1 { panic('no entries') }
 	logs.pop()
-	g.pp.debug('git_logs = \n$logs')
+	g.pp.debug('git_logs', '\n$logs')
 
 	mut limit := if logs.len > g.limit { g.limit } else { logs.len }
 	limit = if g.limit == -1 { logs.len } else { limit }
-	g.pp.debug('git_chosed_commit_limit = $limit')
+	g.pp.debug('git_chosed_commit_limit', '$limit')
 
 	mut changelog := ''
 	for i := 0; i < limit; i++ {
@@ -168,7 +168,7 @@ fn (mut g Git) get_repo_changelog() ? {
 		+ ommited_commit_msg
 		+ '<ul>$changelog</ul>'
 
-	g.pp.debug('generated_changelog = \n$changelog')
+	g.pp.debug('generated_changelog', '\n$changelog')
 	g.changelog = map{ 'content': changelog, 'tag': last_ref }
 }
 
@@ -180,21 +180,19 @@ fn (g Git) get_call(url string, token string, data string) CURLCall {
 }
 
 fn (g Git) upload_asset(token string, filepath string) ?CURLResponse {
-	g.pp.info('uploading asset')
-
 	url := 'https://uploads.github.com/repos'
 		+ '/$g.remote.user/$g.remote.repo'
 		+ '/releases/$g.release_id/assets?name=${os.base(filepath)}'
 
-	g.pp.debug('git_upload_asset_url = $url')
+	g.pp.debug('git_upload_asset_url', '$url')
 
 	mut req := g.get_call(url, token, filepath)
 	res := req.post_multipart() or {
 		panic(g.pp.errmsg('error while making request; got "$err.msg"'))
 	}
 
-	g.pp.debug('git_upload_res_status_code = $res.code')
-	g.pp.debug('git_upload_res_text = \n$res.body')
+	g.pp.debug('git_upload_res_status_code', '$res.code')
+	g.pp.debug('git_upload_res_text', '\n$res.body')
 	return res
 }
 
@@ -211,8 +209,8 @@ fn (mut g Git) create_release(token string) ?(CURLResponse, ReleaseResponse) {
 
 	url  := 'https://api.github.com/repos/$g.remote.user/$g.remote.repo/releases'
 	data := json.encode(payload)
-	g.pp.debug('git_release_url = $url')
-	g.pp.debug('git_release_req_data = \n$data')
+	g.pp.debug('git_release_url', '$url')
+	g.pp.debug('git_release_req_data', '$data')
 
 	// should I escape each special character so the shell doesn´t complain
 	// or write to a file and pass to CURL via STDIN?
@@ -251,8 +249,8 @@ fn (mut g Git) create_release(token string) ?(CURLResponse, ReleaseResponse) {
 		panic(g.pp.errmsg('error while making request; got "$err.msg"'))
 	}
 
-	g.pp.debug('git_release_res_status_code = $res.code')
-	g.pp.debug('git_release_res_text = \n$res.body')
+	g.pp.debug('git_release_res_status_code', '$res.code')
+	g.pp.debug('git_release_res_text', '\n$res.body')
 	res_p := json.decode(ReleaseResponse, res.body) or {
 		panic(g.pp.errmsg('could not encode request response; got "$err.msg"'))
 	}

@@ -75,11 +75,17 @@ fn (p PrettyPrint) warn(txt string) {
 	p.puts(txt, false, fn (t string) string { return term.yellow(t) })
 }
 
-fn (p PrettyPrint) debug(txt string) {
+fn (p PrettyPrint) debug(key string, txt string) {
 	if !p.debug_mode { return }
 	if p.no_color {
-		println('==> [DEBUG] $txt')
+		println('===> [DEBUG] $key = $txt')
 	} else {
-		println(term.yellow('==> ') + term.bold('[DEBUG] ') + txt)
+		println(
+			term.gray('===> ')
+			+ term.bold('[DEBUG] ')
+			+ key
+			+ term.bright_red(' = ')
+			+ txt
+		)
 	}
 }
