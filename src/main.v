@@ -58,6 +58,15 @@ fn get_github_token() (bool, string) {
 	return gh_token_is_undef, gh_token
 }
 
+fn check_dependency(binary string) ?string {
+	r := os.execute('which $binary')
+	if r.exit_code != 0 {
+		return error('could not find required dependency "$binary"')
+	}
+
+	return r.output.trim_space()
+}
+
 fn main() {
 	started_at := time.now()
 	meta_d     := get_meta_d()
@@ -77,6 +86,11 @@ fn main() {
 	pp.debug('flag_limit', '$limit')
 	pp.debug('flag_attach', '$annexes')
 	start_msg(no_color, started_at, meta_d)
+
+	git_bin_path  := check_dependency('git') or { panic(pp.errmsg(err.msg)) }
+	curl_bin_path := check_dependency('curl') or { panic(pp.errmsg(err.msg)) }
+	pp.debug('git_binary_path', '$git_bin_path')
+	pp.debug('curl_binary_path', '$curl_bin_path')
 
 	mut resolved_annexes := []string{}
 	for annex in annexes {
