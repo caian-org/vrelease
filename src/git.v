@@ -176,6 +176,7 @@ fn (g Git) get_call(url string, token string, data string) CURLCall {
 	mut call := build_curl(g.pp, url, data)
 	call.add_header('Accept', 'application/vnd.github.v3+json')
 	call.add_header('Authorization', 'token ' + token)
+
 	return call
 }
 
@@ -193,6 +194,7 @@ fn (g Git) upload_asset(token string, filepath string) ?CURLResponse {
 
 	g.pp.debug('git_upload_res_status_code', '$res.code')
 	g.pp.debug('git_upload_res_text', '\n$res.body')
+
 	return res
 }
 
@@ -256,5 +258,6 @@ fn (mut g Git) create_release(token string) ?(CURLResponse, ReleaseResponse) {
 	}
 
 	g.release_id = res_p.id
+
 	return res, res_p
 }

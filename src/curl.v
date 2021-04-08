@@ -56,6 +56,7 @@ fn (c CURLCall) build_base_cmd() string {
 fn (c CURLCall) run(cmd string) ?CURLResponse {
 	res  := os.execute_or_panic(cmd)
 	segs := res.output.trim_space().split('\n')
+
 	return CURLResponse{
 		code: segs.pop().int()
 		body: segs.join('\n')
@@ -65,11 +66,13 @@ fn (c CURLCall) run(cmd string) ?CURLResponse {
 fn (mut c CURLCall) post_json() ?CURLResponse {
 	c.headers['Content-Type'] = 'application/json'
 	cmd := c.build_base_cmd() + ' -d "$c.data"'
+
 	return c.run(cmd)
 }
 
 fn (mut c CURLCall) post_multipart() ?CURLResponse {
 	c.headers['Content-Type'] = 'application/octet-stream'
 	cmd := c.build_base_cmd() + ' --data-binary @"$c.data"'
+
 	return c.run(cmd)
 }
