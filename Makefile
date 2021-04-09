@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := build
 
 VC = v
-VFLAGS =
+VFLAGS = -W
 
 SRC_DIR = src
 ARTIFACT = vrelease
@@ -19,12 +19,12 @@ build: clean
 	@echo "$(PATH)" | tr ':' '\n' | xargs -n 1 printf "   - %s\n"
 	@printf "\n"
 	@printf "\n>>> write-meta\n"
-	$(VC) run scripts/write-meta.v
+	cd scripts && $(VC) run write-meta.v
 	@printf "\n>>> compile\n"
 	$(VC) $(VFLAGS) $(SRC_DIR) -o $(ARTIFACT)
 	@printf "\n* binary size: "
 	@du -h $(ARTIFACT) | cut -f -1
 	@printf "\nDONE\n"
 
-build-release: VFLAGS += -prod
+build-release: VFLAGS += -prod -show-timings -nocolor
 build-release: build

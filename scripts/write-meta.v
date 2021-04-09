@@ -21,7 +21,7 @@ fn get_last_tag() ?string {
 }
 
 fn main() {
-	src_dir := os.join_path(os.getwd(), 'src')
+	src_dir := os.join_path(os.getwd(), '..', 'src')
 	meta_f  := os.join_path(src_dir, '_meta')
 	meta_t  := os.join_path(src_dir, 'meta.v')
 
