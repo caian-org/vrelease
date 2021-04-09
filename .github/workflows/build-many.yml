@@ -21,7 +21,8 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout to vrelease
+        uses: actions/checkout@v2
 
       - name: Pre-build steps
         run: |
@@ -37,12 +38,12 @@ jobs:
         run: echo "/tmp/v" >> $GITHUB_PATH
 
       - name: Install V
-        run: time bash "${GITHUB_WORKSPACE}/.github/install-v.sh"
+        run: bash "${GITHUB_WORKSPACE}/.github/install-v.sh"
         env:
-          OS: ${{ matrix.os }}
+          OS: "${{ matrix.os }}"
 
       - name: Compile vrelease
-        run: time make build-release
+        run: make build-release
 
       - name: After build run
         run: |
@@ -52,25 +53,27 @@ jobs:
       - name: Rename artifact
         run: |
           if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-            export ARTIFACT="vrelease-$(git rev-parse --short "$GITHUB_SHA")-linux"
+            export ARTIFACT="vrelease-${GITHUB_SHA}-linux"
           fi
 
           if [ "${{ matrix.os }}" = "macos-latest" ]; then
-            export ARTIFACT="vrelease-$(git rev-parse --short "$GITHUB_SHA")-macos"
+            export ARTIFACT="vrelease-${GITHUB_SHA}-macos"
           fi
 
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            export ARTIFACT="vrelease-$(git rev-parse --short "$GITHUB_SHA")-windows.exe"
+            export ARTIFACT="vrelease-${GITHUB_SHA}-windows.exe"
           fi
 
-          export ARTIFACT_PATH="$(pwd)/${ARTIFACT}"
-          echo "::set-env name=ARTIFACT_PATH::$ARTIFACT_PATH"
+          mv vrelease "$ARTIFACT"
+
+          ls -lash
+          echo "::set-env name=ARTIFACT::${ARTIFACT}"
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
-          name: vrelease
-          path: ${{ env.ARTIFACT_PATH }}
+          name: "${{ env.ARTIFACT }}"
+          path: "${{ env.ARTIFACT }}"
           retention-days: 1

@@ -1,0 +1,137 @@
+name: test
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - "**.md"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # ---------------------------------------------------------------------------
+  on-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for build to finish
+        uses: lewagon/wait-on-check-action@master
+        with:
+          ref: "${{ github.sha }}"
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          wait-interval: 20
+          running-workflow-name: on-linux
+
+      - name: Checkout to playground
+        uses: actions/checkout@v2
+        with:
+          repository: "caian-org/vrtp"
+
+      - name: Set artifact name
+        run: |
+          echo "::set-env name=ARTIFACT::vrelease-${GITHUB_SHA}-linux"
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
+
+      - name: Artifact name
+        run: echo "${{ env.ARTIFACT }}"
+
+      - name: Download compiled artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          name: "${{ env.ARTIFACT }}"
+          workflow: build-many.yml
+
+      - name: Playground content
+        run: ls -lash
+
+      - name: Download auto-commiter
+        run: curl -L -O "https://github.com/caian-org/vrtp/releases/download/v0.1.1/commiter-linux"
+
+      - name: Configure git
+        run: |
+          git config --global user.email "hi@caian.org"
+          git config --global user.name "Caian R. Ertl"
+
+      - name: Run auto-commiter
+        run: ./commiter-linux
+
+  # ---------------------------------------------------------------------------
+  on-macos:
+    runs-on: macos-latest
+    needs: on-linux
+    steps:
+      - name: Checkout to playground
+        uses: actions/checkout@v2
+        with:
+          repository: "caian-org/vrtp"
+
+      - name: Set artifact name
+        run: |
+          echo "::set-env name=ARTIFACT::vrelease-${GITHUB_SHA}-macos"
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
+
+      - name: Artifact name
+        run: echo "${{ env.ARTIFACT }}"
+
+      - name: Download compiled artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          name: "${{ env.ARTIFACT }}"
+          workflow: build-many.yml
+
+      - name: Playground content
+        run: ls -lash
+
+      - name: Download auto-commiter
+        run: curl -L -O "https://github.com/caian-org/vrtp/releases/download/v0.1.1/commiter-macos"
+
+      - name: Configure git
+        run: |
+          git config --global user.email "hi@caian.org"
+          git config --global user.name "Caian R. Ertl"
+
+      - name: Run auto-commiter
+        run: ./commiter-macos
+
+  # ---------------------------------------------------------------------------
+  on-windows:
+    runs-on: windows-latest
+    needs: [on-linux, on-macos]
+    steps:
+      - name: Checkout to playground
+        uses: actions/checkout@v2
+        with:
+          repository: "caian-org/vrtp"
+
+      - name: Set artifact name
+        run: |
+          echo "::set-env name=ARTIFACT::vrelease-${GITHUB_SHA}-windows.exe"
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
+
+      - name: Artifact name
+        run: echo "${{ env.ARTIFACT }}"
+
+      - name: Download compiled artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          name: "${{ env.ARTIFACT }}"
+          workflow: build-many.yml
+
+      - name: Playground content
+        run: ls -lash
+
+      - name: Download auto-commiter
+        run: curl -L -O "https://github.com/caian-org/vrtp/releases/download/v0.1.1/commiter-windows.exe"
+
+      - name: Configure git
+        run: |
+          git config --global user.email "hi@caian.org"
+          git config --global user.name "Caian R. Ertl"
+
+      - name: Run auto-commiter
+        run: ./commiter-windows.exe
