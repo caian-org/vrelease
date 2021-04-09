@@ -3,10 +3,10 @@ name: build
 on:
   push:
     paths-ignore:
-      - '**.md'
+      - "**.md"
   pull_request:
     paths-ignore:
-      - '**.md'
+      - "**.md"
 
 jobs:
   multi-os:
@@ -65,6 +65,8 @@ jobs:
 
           export ARTIFACT_PATH="$(pwd)/${ARTIFACT}"
           echo "::set-env name=ARTIFACT_PATH::$ARTIFACT_PATH"
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
