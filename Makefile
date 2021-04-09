@@ -21,7 +21,7 @@ build: clean
 	@printf "\n>>> write-meta\n"
 	cd scripts && $(VC) run write-meta.v
 	@printf "\n>>> compile\n"
-	$(VC) $(VFLAGS) $(SRC_DIR) -o $(ARTIFACT)
+	$(VC) $(VFLAGS) ./$(SRC_DIR) -o ./$(ARTIFACT)
 	@printf "\n* binary size: "
 	@du -h $(ARTIFACT) | cut -f -1
 	@printf "\nDONE\n"

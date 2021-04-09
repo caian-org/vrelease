@@ -20,9 +20,14 @@ echo "Downloading from: $URL"
     cd /tmp
     curl -q -L -O "$URL"
     unzip -q "$FN"
+    printf "\n\n"
 
     cd v
     ./v up
+
+    if [ "$VLANG_TARGET_OS" = "windows" ]; then ./make.bat; fi
 )
 
+printf "\n\n"
 v version
+printf "\n"
