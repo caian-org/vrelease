@@ -60,14 +60,15 @@ jobs:
           fi
 
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            export ARTIFACT="vrelease-windows-$(git rev-parse --short "$GITHUB_SHA")"
+            export ARTIFACT="vrelease-windows-$(git rev-parse --short "$GITHUB_SHA").exe"
           fi
 
           export ARTIFACT_PATH="$(pwd)/${ARTIFACT}"
+          echo "ARTIFACT_PATH: $ARTIFACT_PATH"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: vrelease
-          path: $ARTIFACT_PATH
+          path: ${{ env.ARTIFACT_PATH }}
           retention-days: 1
