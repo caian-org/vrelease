@@ -25,7 +25,7 @@ echo "Downloading from: $URL"
     cd v
     ./v up
 
-    if [ "$VLANG_TARGET_OS" = "windows" ]; then ./make.bat; fi
+    if [ "$VLANG_TARGET_OS" = "windows" ]; then ./make.bat -msvc; fi
 )
 
 printf "\n\n"
