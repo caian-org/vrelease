@@ -48,3 +48,26 @@ jobs:
         run: |
           ./vrelease -h
           ./vrelease -v
+
+      - name: Rename artifact
+        run: |
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            export ARTIFACT="vrelease-linux-$(git rev-parse --short "$GITHUB_SHA")"
+          fi
+
+          if [ "${{ matrix.os }}" = "macos-latest" ]; then
+            export ARTIFACT="vrelease-macos-$(git rev-parse --short "$GITHUB_SHA")"
+          fi
+
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            export ARTIFACT="vrelease-windows-$(git rev-parse --short "$GITHUB_SHA")"
+          fi
+
+          export ARTIFACT_PATH="$(pwd)/${ARTIFACT}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: vrelease
+          path: $ARTIFACT_PATH
+          retention-days: 1
