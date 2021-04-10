@@ -1,0 +1,68 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+    paths-ignore:
+      - "**.md"
+
+jobs:
+  multi-os-binaries:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for build to finish
+        uses: lewagon/wait-on-check-action@master
+        with:
+          ref: "${{ github.sha }}"
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          wait-interval: 20
+          running-workflow-name: multi-os-binaries
+
+      - name: Checkout to vrelease
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set artifact names
+        run: |
+          echo "::set-env name=LINUX_ARTIFACT::vrelease-${GITHUB_SHA}-linux"
+          echo "::set-env name=MACOS_ARTIFACT::vrelease-${GITHUB_SHA}-macos"
+          echo "::set-env name=WINDOWS_ARTIFACT::vrelease-${GITHUB_SHA}-windows.exe"
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
+
+      - name: Download linux artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          name: "${{ env.LINUX_ARTIFACT }}"
+          workflow: build-many.yml
+
+      - name: Download macos artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          name: "${{ env.MACOS_ARTIFACT }}"
+          workflow: build-many.yml
+
+      - name: Download windows artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          name: "${{ env.WINDOWS_ARTIFACT }}"
+          workflow: build-many.yml
+
+      - name: Remove SHA from artifact name
+        run: |
+          mv vrelease-*-linux vrelease-linux
+          mv vrelease-*-macos vrelease-macos
+          mv vrelease-*-windows.exe vrelease-windows.exe
+
+      - name: Make release
+        run: |
+          chmod +x vrelease-linux
+
+          ./vrelease-linux -d \
+            -a vrelease-linux \
+            -a vrelease-macos \
+            -a vrelease-windows.exe
+        env:
+          VRELEASE_GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
