@@ -67,7 +67,7 @@ jobs:
           cp /tmp/do-test.sh .
           bash do-test.sh
         env:
-          VRELEASE_GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          VRELEASE_GITHUB_TOKEN: "${{ secrets.GH_TOKEN }}"
 
   # ---------------------------------------------------------------------------
   on-macos:
@@ -117,7 +117,7 @@ jobs:
           cp /tmp/do-test.sh .
           bash do-test.sh
         env:
-          VRELEASE_GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          VRELEASE_GITHUB_TOKEN: "${{ secrets.GH_TOKEN }}"
 
   # ---------------------------------------------------------------------------
   on-windows:
@@ -167,4 +167,4 @@ jobs:
           cp /tmp/do-test.sh .
           bash do-test.sh
         env:
-          VRELEASE_GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          VRELEASE_GITHUB_TOKEN: "${{ secrets.GH_TOKEN }}"
