@@ -1,5 +1,9 @@
 #!/bin/bash
 
+set -ex
+
+git checkout tests
+
 # ....
 ./committer
 ./vrelease
