@@ -115,7 +115,7 @@ fn main() {
 	}
 
 	println(pp.success('succeed'))
-	pp.info('release id is $release.id')
+	pp.info('release id is ${pp.emph(release.id)}')
 	pp.info('available @ ${pp.href(release.html_url)}')
 
 	for annex in resolved_annexes {
