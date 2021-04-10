@@ -24,6 +24,12 @@ jobs:
           wait-interval: 20
           running-workflow-name: on-linux
 
+      - name: Checkout to vrelease
+        uses: actions/checkout@v2
+
+      - name: Get test file
+        run: cp "${GITHUB_WORKSPACE}/.github/do-test.sh" /tmp
+
       - name: Checkout to playground
         uses: actions/checkout@v2
         with:
@@ -58,14 +64,22 @@ jobs:
 
       - name: Run tests
         run: |
-          cp "${GITHUB_WORKSPACE}/.github/do-test.sh" .
+          cp tmp/do-test.sh .
           bash do-test.sh
+        env:
+          VRELEASE_GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
   # ---------------------------------------------------------------------------
   on-macos:
     runs-on: macos-latest
     needs: on-linux
     steps:
+      - name: Checkout to vrelease
+        uses: actions/checkout@v2
+
+      - name: Get test file
+        run: cp "${GITHUB_WORKSPACE}/.github/do-test.sh" /tmp
+
       - name: Checkout to playground
         uses: actions/checkout@v2
         with:
@@ -100,14 +114,22 @@ jobs:
 
       - name: Run tests
         run: |
-          cp "${GITHUB_WORKSPACE}/.github/do-test.sh" .
+          cp tmp/do-test.sh .
           bash do-test.sh
+        env:
+          VRELEASE_GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
   # ---------------------------------------------------------------------------
   on-windows:
     runs-on: windows-latest
     needs: [on-linux, on-macos]
     steps:
+      - name: Checkout to vrelease
+        uses: actions/checkout@v2
+
+      - name: Get test file
+        run: cp "${GITHUB_WORKSPACE}/.github/do-test.sh" /tmp
+
       - name: Checkout to playground
         uses: actions/checkout@v2
         with:
@@ -142,5 +164,7 @@ jobs:
 
       - name: Run tests
         run: |
-          cp "${GITHUB_WORKSPACE}/.github/do-test.sh" .
+          cp tmp/do-test.sh .
           bash do-test.sh
+        env:
+          VRELEASE_GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
