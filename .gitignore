@@ -1,6 +1,9 @@
 # binaries for programs and plugins
 main
 vrelease
+vrelease-linux
+vrelease-macos
+vrelease-windows
 *.exe
 *.exe~
 *.so
