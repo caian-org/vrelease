@@ -55,7 +55,7 @@ jobs:
           git config --global user.email "hi@caian.org"
           git config --global user.name "Caian R. Ertl"
 
-      - name: Run auto-commiter
+      - name: Run tests
         run: |
           chmod +x commiter-linux
           ./commiter-linux
@@ -96,7 +96,7 @@ jobs:
           git config --global user.email "hi@caian.org"
           git config --global user.name "Caian R. Ertl"
 
-      - name: Run auto-commiter
+      - name: Run tests
         run: |
           chmod +x commiter-macos
           ./commiter-macos
@@ -137,7 +137,7 @@ jobs:
           git config --global user.email "hi@caian.org"
           git config --global user.name "Caian R. Ertl"
 
-      - name: Run auto-commiter
+      - name: Run tests
         run: |
           chmod +x commiter-windows.exe
           ./commiter-windows.exe
