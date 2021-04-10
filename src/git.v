@@ -22,6 +22,7 @@ module main
 
 import os
 import json
+import time
 
 
 enum Protocol {
@@ -218,41 +219,20 @@ fn (mut g Git) create_release(token string) ?(CURLResponse, ReleaseResponse) {
 	g.pp.debug('git_release_url', '$url')
 	g.pp.debug('git_release_req_data', '$data')
 
-	// should I escape each special character so the shell doesn´t complain
-	// or write to a file and pass to CURL via STDIN?
-	escaped_data := data.split('')
-		.map(fn (s string) string {
-			return match s {
-				'/'  { '\/' }
-				'>'  { '\>' }
-				'<'  { '\<' }
-				'['  { '\[' }
-				']'  { '\]' }
-				'('  { '\(' }
-				')'  { '\)' }
-				';'  { '\;' }
-				'|'  { '\|' }
-				'^'  { '\^' }
-				'~'  { '\~' }
-				'!'  { '\!' }
-				'?'  { '\?' }
-				'#'  { '\#' }
-				'$'  { '\$' }
-				'%'  { '\%' }
-				'&'  { '\&' }
-				'*'  { '\*' }
-				'.'  { '\.' }
-				'`'  { '\`' }
-				'"'  { '\\"' }
-				'\\' { '\\\\' }
-				else { s }
-			}
-		})
-		.join('')
+	tmp_file := os.join_path('/tmp', time.now().unix_time_milli().str())
+	os.write_file(tmp_file, data) or {
+		panic(g.pp.errmsg('could not write to "$tmp_file"; got "$err.msg"'))
+	}
 
-	mut req := g.get_call(url, token, escaped_data)
+	g.pp.debug('release_payload_tmp_file', tmp_file)
+
+	mut req := g.get_call(url, token, tmp_file)
 	res := req.post_json() or {
 		panic(g.pp.errmsg('error while making request; got "$err.msg"'))
+	}
+
+	os.rm(tmp_file) or {
+		panic(g.pp.errmsg('could not remove temp file "$tmp_file"; got "$err.msg"'))
 	}
 
 	g.pp.debug('git_release_res_status_code', '$res.code')
