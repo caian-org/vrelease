@@ -3,9 +3,9 @@ name: build
 on:
   push:
     branches:
-      - "*"
+      - master
     tags:
-      - "*"
+      - "v*"
     paths-ignore:
       - "**.md"
   pull_request:
