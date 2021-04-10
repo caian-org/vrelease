@@ -109,7 +109,11 @@ fn (mut g Git) get_remote_info() ? {
 			repo = segs[4]
 		}
 
-		return user, repo[0 .. repo.len - 4] // removes ".git" from the repo name
+		if repo.ends_with('.git') {
+			repo = repo[0 .. repo.len - 4]
+		}
+
+		return user, repo
 	}
 
 	user, repo := xtract(g, protocol, uri)
