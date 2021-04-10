@@ -64,7 +64,7 @@ jobs:
 
       - name: Run tests
         run: |
-          cp tmp/do-test.sh .
+          cp /tmp/do-test.sh .
           bash do-test.sh
         env:
           VRELEASE_GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
@@ -114,7 +114,7 @@ jobs:
 
       - name: Run tests
         run: |
-          cp tmp/do-test.sh .
+          cp /tmp/do-test.sh .
           bash do-test.sh
         env:
           VRELEASE_GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
@@ -164,7 +164,7 @@ jobs:
 
       - name: Run tests
         run: |
-          cp tmp/do-test.sh .
+          cp /tmp/do-test.sh .
           bash do-test.sh
         env:
           VRELEASE_GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
