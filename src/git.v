@@ -125,7 +125,7 @@ fn (mut g Git) get_remote_info() ? {
 fn (mut g Git) get_repo_changelog() ? {
 	nt := g.pp.errmsg('no tags found')
 
-	mut res := os.execute_or_panic('git tag --sort=committerdate')
+	mut res := os.execute_or_panic('git tag --sort=taggerdate')
 	g.pp.debug('git_tags_sorted', '${json.encode(res.output)}')
 
 	mut tags := res.output.split('\n')
