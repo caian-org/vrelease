@@ -219,7 +219,7 @@ fn (mut g Git) create_release(token string) ?(CURLResponse, ReleaseResponse) {
 	g.pp.debug('git_release_url', '$url')
 	g.pp.debug('git_release_req_data', '$data')
 
-	tmp_file := os.join_path('/tmp', time.now().unix_time_milli().str())
+	tmp_file := '/tmp/${time.now().unix_time_milli().str()}'
 	os.write_file(tmp_file, data) or {
 		panic(g.pp.errmsg('could not write to "$tmp_file"; got "$err.msg"'))
 	}
