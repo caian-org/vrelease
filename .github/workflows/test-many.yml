@@ -1,7 +1,7 @@
 name: test
 
 on:
-  push:
+  pull_request:
     branches:
       - master
     paths-ignore:
@@ -19,15 +19,27 @@ jobs:
       - name: Wait for build to finish
         uses: lewagon/wait-on-check-action@master
         with:
-          ref: "${{ github.sha }}"
+          ref: "${{ github.event.pull_request.head.sha }}"
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           wait-interval: 20
           running-workflow-name: on-linux
+
+      - name: Checkout to vrelease
+        uses: actions/checkout@v2
+
+      - name: Get test file
+        run: cp "${GITHUB_WORKSPACE}/.github/do-test.sh" /tmp
 
       - name: Checkout to playground
         uses: actions/checkout@v2
         with:
           repository: "caian-org/vrtp"
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config --global user.email "hi@caian.org"
+          git config --global user.name "Caian R. Ertl"
 
       - name: Set artifact name
         run: |
@@ -35,40 +47,49 @@ jobs:
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
 
-      - name: Artifact name
-        run: echo "${{ env.ARTIFACT }}"
-
       - name: Download compiled artifact
         uses: dawidd6/action-download-artifact@v2
         with:
           name: "${{ env.ARTIFACT }}"
           workflow: build-many.yml
 
-      - name: Playground content
-        run: ls -lash
+      - name: Download committer
+        run: curl -L -O "https://github.com/caian-org/committer/releases/download/v0.2.0/committer-linux"
 
-      - name: Download auto-commiter
-        run: curl -L -O "https://github.com/caian-org/vrtp/releases/download/v0.1.1/commiter-linux"
-
-      - name: Configure git
+      - name: Prepare binaries
         run: |
-          git config --global user.email "hi@caian.org"
-          git config --global user.name "Caian R. Ertl"
+          mv vrelease-*-linux vrelease
+          mv committer-linux committer
+          chmod +x vrelease committer
 
       - name: Run tests
         run: |
-          chmod +x commiter-linux
-          ./commiter-linux
+          cp /tmp/do-test.sh .
+          bash do-test.sh
+        env:
+          VRELEASE_GITHUB_TOKEN: "${{ secrets.GH_TOKEN }}"
 
   # ---------------------------------------------------------------------------
   on-macos:
     runs-on: macos-latest
     needs: on-linux
     steps:
+      - name: Checkout to vrelease
+        uses: actions/checkout@v2
+
+      - name: Get test file
+        run: cp "${GITHUB_WORKSPACE}/.github/do-test.sh" /tmp
+
       - name: Checkout to playground
         uses: actions/checkout@v2
         with:
           repository: "caian-org/vrtp"
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config --global user.email "hi@caian.org"
+          git config --global user.name "Caian R. Ertl"
 
       - name: Set artifact name
         run: |
@@ -76,40 +97,49 @@ jobs:
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
 
-      - name: Artifact name
-        run: echo "${{ env.ARTIFACT }}"
-
       - name: Download compiled artifact
         uses: dawidd6/action-download-artifact@v2
         with:
           name: "${{ env.ARTIFACT }}"
           workflow: build-many.yml
 
-      - name: Playground content
-        run: ls -lash
+      - name: Download committer
+        run: curl -L -O "https://github.com/caian-org/committer/releases/download/v0.2.0/committer-macos"
 
-      - name: Download auto-commiter
-        run: curl -L -O "https://github.com/caian-org/vrtp/releases/download/v0.1.1/commiter-macos"
-
-      - name: Configure git
+      - name: Prepare binaries
         run: |
-          git config --global user.email "hi@caian.org"
-          git config --global user.name "Caian R. Ertl"
+          mv vrelease-*-macos vrelease
+          mv committer-macos committer
+          chmod +x vrelease committer
 
       - name: Run tests
         run: |
-          chmod +x commiter-macos
-          ./commiter-macos
+          cp /tmp/do-test.sh .
+          bash do-test.sh
+        env:
+          VRELEASE_GITHUB_TOKEN: "${{ secrets.GH_TOKEN }}"
 
   # ---------------------------------------------------------------------------
   on-windows:
     runs-on: windows-latest
     needs: [on-linux, on-macos]
     steps:
+      - name: Checkout to vrelease
+        uses: actions/checkout@v2
+
+      - name: Get test file
+        run: cp "${GITHUB_WORKSPACE}/.github/do-test.sh" /tmp
+
       - name: Checkout to playground
         uses: actions/checkout@v2
         with:
           repository: "caian-org/vrtp"
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config --global user.email "hi@caian.org"
+          git config --global user.name "Caian R. Ertl"
 
       - name: Set artifact name
         run: |
@@ -117,27 +147,24 @@ jobs:
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
 
-      - name: Artifact name
-        run: echo "${{ env.ARTIFACT }}"
-
       - name: Download compiled artifact
         uses: dawidd6/action-download-artifact@v2
         with:
           name: "${{ env.ARTIFACT }}"
           workflow: build-many.yml
 
-      - name: Playground content
-        run: ls -lash
+      - name: Download committer
+        run: curl -L -O "https://github.com/caian-org/committer/releases/download/v0.2.0/committer-windows.exe"
 
-      - name: Download auto-commiter
-        run: curl -L -O "https://github.com/caian-org/vrtp/releases/download/v0.1.1/commiter-windows.exe"
-
-      - name: Configure git
+      - name: Prepare binaries
         run: |
-          git config --global user.email "hi@caian.org"
-          git config --global user.name "Caian R. Ertl"
+          mv vrelease-*-windows.exe vrelease
+          mv committer-windows.exe committer
+          chmod +x vrelease committer
 
       - name: Run tests
         run: |
-          chmod +x commiter-windows.exe
-          ./commiter-windows.exe
+          cp /tmp/do-test.sh .
+          bash do-test.sh
+        env:
+          VRELEASE_GITHUB_TOKEN: "${{ secrets.GH_TOKEN }}"

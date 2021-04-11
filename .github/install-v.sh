@@ -3,7 +3,7 @@
 set -e
 
 VLANG_TARGET_OS=""
-VLANG_VERSION="0.2.2"
+VLANG_VERSION="weekly.2021.14"
 
 case "$OS" in
     macos-latest) VLANG_TARGET_OS="macos" ;;
@@ -18,7 +18,7 @@ echo "Downloading from: $URL"
 
 (
     cd /tmp
-    curl -q -L -O "$URL"
+    curl -L -O "$URL"
     unzip -q "$FN"
     printf "\n\n"
 

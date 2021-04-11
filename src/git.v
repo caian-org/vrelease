@@ -22,6 +22,7 @@ module main
 
 import os
 import json
+import time
 
 
 enum Protocol {
@@ -124,7 +125,7 @@ fn (mut g Git) get_remote_info() ? {
 fn (mut g Git) get_repo_changelog() ? {
 	nt := g.pp.errmsg('no tags found')
 
-	mut res := os.execute_or_panic('git tag --sort=committerdate')
+	mut res := os.execute_or_panic('git tag --sort=-creatordate')
 	g.pp.debug('git_tags_sorted', '${json.encode(res.output)}')
 
 	mut tags := res.output.split('\n')
@@ -132,16 +133,16 @@ fn (mut g Git) get_repo_changelog() ? {
 	tags.pop()
 
 	if tags[0].trim_space() == '' { panic(nt) }
-	last_ref := tags[tags.len - 1].trim_space()
+	current_ref := tags[0].trim_space()
 	g.pp.debug('git_found_tags', '$tags')
 
-	mut sec_last_ref := 'master'
+	mut last_ref := 'master'
 	if tags.len >= 2 {
-		sec_last_ref = tags[tags.len - 2].trim_space()
+		last_ref = tags[1].trim_space()
 	}
 
-	g.pp.info('generating changelog from ${g.pp.emph(sec_last_ref)} to ${g.pp.emph(last_ref)}')
-	res = os.execute_or_panic('git log --pretty=oneline ${sec_last_ref}..${last_ref}')
+	g.pp.info('generating changelog from ${g.pp.emph(last_ref)} to ${g.pp.emph(current_ref)}')
+	res = os.execute_or_panic('git log --pretty=oneline ${last_ref}..${current_ref}')
 
 	mut logs := res.output.split('\n')
 	if logs.len <= 1 { panic('no entries') }
@@ -173,7 +174,7 @@ fn (mut g Git) get_repo_changelog() ? {
 		+ '<ul>$changelog</ul>'
 
 	g.pp.debug('generated_changelog', '\n$changelog')
-	g.changelog = map{ 'content': changelog, 'tag': last_ref }
+	g.changelog = map{ 'content': changelog, 'tag': current_ref }
 }
 
 fn (g Git) get_call(url string, token string, data string) CURLCall {
@@ -218,41 +219,20 @@ fn (mut g Git) create_release(token string) ?(CURLResponse, ReleaseResponse) {
 	g.pp.debug('git_release_url', '$url')
 	g.pp.debug('git_release_req_data', '$data')
 
-	// should I escape each special character so the shell doesn´t complain
-	// or write to a file and pass to CURL via STDIN?
-	escaped_data := data.split('')
-		.map(fn (s string) string {
-			return match s {
-				'/'  { '\/' }
-				'>'  { '\>' }
-				'<'  { '\<' }
-				'['  { '\[' }
-				']'  { '\]' }
-				'('  { '\(' }
-				')'  { '\)' }
-				';'  { '\;' }
-				'|'  { '\|' }
-				'^'  { '\^' }
-				'~'  { '\~' }
-				'!'  { '\!' }
-				'?'  { '\?' }
-				'#'  { '\#' }
-				'$'  { '\$' }
-				'%'  { '\%' }
-				'&'  { '\&' }
-				'*'  { '\*' }
-				'.'  { '\.' }
-				'`'  { '\`' }
-				'"'  { '\\"' }
-				'\\' { '\\\\' }
-				else { s }
-			}
-		})
-		.join('')
+	tmp_file := os.join_path(os.getwd(), time.now().unix_time_milli().str())
+	os.write_file(tmp_file, data) or {
+		panic(g.pp.errmsg('could not write to "$tmp_file"; got "$err.msg"'))
+	}
 
-	mut req := g.get_call(url, token, escaped_data)
+	g.pp.debug('release_payload_tmp_file', tmp_file)
+
+	mut req := g.get_call(url, token, tmp_file)
 	res := req.post_json() or {
 		panic(g.pp.errmsg('error while making request; got "$err.msg"'))
+	}
+
+	os.rm(tmp_file) or {
+		panic(g.pp.errmsg('could not remove temp file "$tmp_file"; got "$err.msg"'))
 	}
 
 	g.pp.debug('git_release_res_status_code', '$res.code')
