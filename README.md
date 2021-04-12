@@ -1,4 +1,7 @@
-[![Build][gh-build-shield]][gh-build-url] [![Test][gh-test-shield]][gh-test-url] [![Release][gh-release-shield]][gh-release-url] ![[Tag][tag-shield]][tag-url]
+[![Build][gh-build-shield]][gh-build-url]
+[![Test][gh-test-shield]][gh-test-url]
+[![Release][gh-release-shield]][gh-release-url]
+[![Tag][tag-shield]][tag-url]
 
 # vrelease
 
@@ -11,7 +14,7 @@
 [gh-release-shield]: https://img.shields.io/github/workflow/status/caian-org/vrelease/release?label=release&logo=github&style=flat-square
 [gh-release-url]: https://github.com/caian-org/vrelease/actions/workflows/release-all.yml
 
-[tag-shield]: https://img.shields.io/github/tag/caian-org/vrelease.svg?style=flat-square
+[tag-shield]: https://img.shields.io/github/tag/caian-org/vrelease.svg?logo=git&logoColor=FFF&style=flat-square
 [tag-url]: https://github.com/caian-org/vrelease/releases
 
 
