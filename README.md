@@ -5,6 +5,15 @@
 
 # vrelease
 
+<img src="v.svg" height="210px" align="right"/>
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
+- **Donec.** Aenean ultricies consectetur odio, varius gravida
+- **Phasellus.** Vestibulum ante ipsum primis in faucibus
+- **Mauris.** Sed et auctor dui, eget faucibus dolor, aliquam et tincidunt dui.
+- **Suspendisse.** Morbi at est a mauris scelerisque ornare
+
 [gh-build-shield]: https://img.shields.io/github/workflow/status/caian-org/vrelease/build?label=build&logo=github&style=flat-square
 [gh-build-url]: https://github.com/caian-org/vrelease/actions/workflows/build-many.yml
 
