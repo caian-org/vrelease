@@ -5,7 +5,7 @@
 
 # vrelease
 
-<img src="v.svg" height="210px" align="right"/>
+<img src="icon.svg" height="210px" align="right"/>
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 
