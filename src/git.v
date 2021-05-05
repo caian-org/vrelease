@@ -102,7 +102,7 @@ fn (mut g Git) get_remote_info() ? {
 	g.pp.info('executing on repository ${g.pp.emph(repo)} of user ${g.pp.emph(user)}')
 }
 
-fn (mut g Git) get_repo_changelog() ? {
+fn (mut g Git) gen_repo_changelog() ? {
 	nt := g.pp.errmsg('no tags found')
 
 	mut res := os.execute_or_panic('git tag --sort=-creatordate')
@@ -157,6 +157,18 @@ fn (mut g Git) get_repo_changelog() ? {
 	g.changelog = map{ 'content': changelog, 'tag': current_ref }
 }
 
+fn (mut g Git) gen_checksum_sec(annexes []Annex) {
+	mut annex_sec := '<h1>Checksum (SHA256)</h1>'
+
+	mut checksum_items := ''
+	for annex in annexes {
+		checksum_items += '<li>${annex.filename} (<code>${annex.checksum}</code>)</li>'
+	}
+
+	annex_sec += '<ul>$checksum_items</ul>'
+	g.changelog['content'] += annex_sec
+}
+
 fn (g Git) get_call(url string, token string, data string) CURLCall {
 	mut call := build_curl(g.pp, url, data)
 	call.add_header('Accept', 'application/vnd.github.v3+json')
@@ -165,14 +177,14 @@ fn (g Git) get_call(url string, token string, data string) CURLCall {
 	return call
 }
 
-fn (g Git) upload_asset(token string, filepath string) ?CURLResponse {
+fn (g Git) upload_asset(token string, annex Annex) ?CURLResponse {
 	url := 'https://uploads.github.com/repos'
 		+ '/$g.remote.user/$g.remote.repo'
-		+ '/releases/$g.release_id/assets?name=${os.base(filepath)}'
+		+ '/releases/$g.release_id/assets?name=$annex.filename'
 
 	g.pp.debug('git_upload_asset_url', '$url')
 
-	mut req := g.get_call(url, token, filepath)
+	mut req := g.get_call(url, token, annex.filepath)
 	res := req.post_multipart() or {
 		panic(g.pp.errmsg('error while making request; got "$err.msg"'))
 	}

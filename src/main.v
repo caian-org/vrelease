@@ -57,6 +57,7 @@ fn main() {
 
 	debug_mode := cli.is_set('debug')
 	no_color   := cli.is_set('no-color')
+	add_sum    := cli.is_set('checksum')
 	limit      := cli.get_limit()
 	annexes    := cli.get_annexes()
 
@@ -72,9 +73,20 @@ fn main() {
 	pp.debug('git_binary_path', '$git_bin_path')
 	pp.debug('curl_binary_path', '$curl_bin_path')
 
-	mut resolved_annexes := []string{}
+	mut resolved_annexes := []Annex{}
 	for annex in annexes {
-		resolved_annexes << file_resolve_path(annex) or { panic(pp.errmsg(err.msg)) }
+		resolved_p := file_resolve_path(annex) or { panic(pp.errmsg(err.msg)) }
+
+		mut sum := ''
+		if add_sum {
+			sum = file_sha256_sum(resolved_p) or { panic(pp.errmsg(err.msg)) }
+		}
+
+		resolved_annexes << Annex{
+			filename: os.base(resolved_p)
+			filepath: resolved_p,
+			checksum: sum,
+		}
 	}
 
 	pp.debug('resolved_annexes', '$resolved_annexes')
@@ -86,7 +98,10 @@ fn main() {
 
 	mut git := git_build(pp, limit)
 	git.get_remote_info() or { panic(err.msg) }
-	git.get_repo_changelog() or { panic(err.msg) }
+	git.gen_repo_changelog() or { panic(err.msg) }
+	if add_sum {
+		git.gen_checksum_sec(resolved_annexes)
+	}
 
 	release_res, release := git.create_release(gh_token) or { panic(err.msg) }
 	if release_res.code != 201 {
@@ -99,7 +114,7 @@ fn main() {
 	pp.info('available @ ${pp.href(release.html_url)}')
 
 	for annex in resolved_annexes {
-		pp.info_nl('uploading asset "${os.base(annex)}"... ')
+		pp.info_nl('uploading asset "$annex.filename"... ')
 		git.upload_asset(gh_token, annex) or {
 			println(pp.fail('failed'))
 			panic(pp.errmsg(err.msg))

@@ -33,6 +33,13 @@ fn cli_build(md map[string]string) Cli {
 	})
 
 	cmd.add_flag(Flag{
+		flag:        .bool
+		name:        'checksum'
+		abbrev:      'c'
+		description: 'adds file integrity data (SHA256 checksum)'
+	})
+
+	cmd.add_flag(Flag{
 		flag:        .string_array
 		name:        'attach'
 		abbrev:      'a'
