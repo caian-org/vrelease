@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := build
 
 VC = v
-VFLAGS = -W
+VFLAGS = -W -showcc -show-c-output -show-timings
 
 SRC_DIR = src
 ARTIFACT = vrelease
@@ -27,5 +27,8 @@ build: clean
 	@du -h $(ARTIFACT) | cut -f -1
 	@printf "\nDONE\n"
 
-build-release: VFLAGS += -prod -compress -show-timings -nocolor
+build-debug: VFLAGS += -g -cstrict
+build-debug: build
+
+build-release: VFLAGS += -prod -compress -nocolor
 build-release: build
