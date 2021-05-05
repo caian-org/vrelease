@@ -12,3 +12,6 @@ vrelease-windows
 
 # script generated
 meta.v
+
+# debug info
+*.dSYM
