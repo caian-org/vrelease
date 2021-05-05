@@ -27,5 +27,5 @@ build: clean
 	@du -h $(ARTIFACT) | cut -f -1
 	@printf "\nDONE\n"
 
-build-release: VFLAGS += -prod -show-timings -nocolor
+build-release: VFLAGS += -prod -compress -show-timings -nocolor
 build-release: build
