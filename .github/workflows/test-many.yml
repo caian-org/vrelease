@@ -54,7 +54,7 @@ jobs:
           workflow: build-many.yml
 
       - name: Download committer
-        run: curl -L -O "https://github.com/caian-org/committer/releases/download/v0.2.0/committer-linux"
+        run: curl -L -O "https://github.com/caian-org/committer/releases/download/v0.3.0/committer-linux"
 
       - name: Prepare binaries
         run: |
@@ -104,7 +104,7 @@ jobs:
           workflow: build-many.yml
 
       - name: Download committer
-        run: curl -L -O "https://github.com/caian-org/committer/releases/download/v0.2.0/committer-macos"
+        run: curl -L -O "https://github.com/caian-org/committer/releases/download/v0.3.0/committer-macos"
 
       - name: Prepare binaries
         run: |
@@ -154,7 +154,7 @@ jobs:
           workflow: build-many.yml
 
       - name: Download committer
-        run: curl -L -O "https://github.com/caian-org/committer/releases/download/v0.2.0/committer-windows.exe"
+        run: curl -L -O "https://github.com/caian-org/committer/releases/download/v0.3.0/committer-windows.exe"
 
       - name: Prepare binaries
         run: |
