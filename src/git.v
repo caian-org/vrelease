@@ -166,6 +166,7 @@ fn (mut g Git) gen_checksum_sec(annexes []Annex) {
 	}
 
 	annex_sec += '<ul>$checksum_items</ul>'
+	g.pp.debug('generated_checksum', '\n$changelog')
 	g.changelog['content'] += annex_sec
 }
 
