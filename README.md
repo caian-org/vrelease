@@ -3,7 +3,7 @@
 [![Release][gh-release-shield]][gh-release-url]
 [![Tag][tag-shield]][tag-url]
 
-# vrelease
+# `vrelease`
 
 <img src="icon.svg" height="240px" align="right"/>
 
