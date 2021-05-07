@@ -6,7 +6,7 @@ fn errmsg(txt string) string {
 }
 
 fn get_last_tag() ?string {
-	res := os.execute_or_panic('git tag --sort=committerdate')
+	res := os.execute_or_panic('git tag --sort=-creatordate')
 	tags := res.output.split('\n')
 
 	if tags.len > 0 {
