@@ -19,27 +19,6 @@ fn cli_build(md map[string]string) Cli {
 	}
 
 	cmd.add_flag(Flag{
-		flag:        .bool
-		name:        'debug'
-		abbrev:      'd'
-		description: 'enables the debug mode'
-	})
-
-	cmd.add_flag(Flag{
-		flag:        .bool
-		name:        'no-color'
-		abbrev:      'n'
-		description: 'disables output with colors (useful on non-compliant shells)'
-	})
-
-	cmd.add_flag(Flag{
-		flag:        .bool
-		name:        'checksum'
-		abbrev:      'c'
-		description: 'adds file integrity data (SHA256 checksum)'
-	})
-
-	cmd.add_flag(Flag{
 		flag:        .string_array
 		name:        'attach'
 		abbrev:      'a'
@@ -47,11 +26,46 @@ fn cli_build(md map[string]string) Cli {
 	})
 
 	cmd.add_flag(Flag{
+		flag:        .bool
+		name:        'add-description'
+		abbrev:      'i'
+		description: 'adds release description from last commit'
+	})
+
+	cmd.add_flag(Flag{
+		flag:        .bool
+		name:        'add-checksum'
+		abbrev:      'c'
+		description: 'adds file integrity data (SHA256 checksum)'
+	})
+
+	cmd.add_flag(Flag{
+		flag:        .bool
+		name:        'pre-release'
+		abbrev:      'p'
+		description: 'identifies the release as non-production ready'
+	})
+
+	cmd.add_flag(Flag{
 		flag:          .int
 		name:          'limit'
 		abbrev:        'l'
 		default_value: ['-1']
-		description:   'sets a limit to the amount of commits on the changelog'
+		description:   'sets a limit to the amount of changelog lines'
+	})
+
+	cmd.add_flag(Flag{
+		flag:        .bool
+		name:        'debug'
+		abbrev:      'd'
+		description: 'enables debug mode'
+	})
+
+	cmd.add_flag(Flag{
+		flag:        .bool
+		name:        'no-color'
+		abbrev:      'n'
+		description: 'disables output with colors'
 	})
 
 	cmd.add_flag(Flag{

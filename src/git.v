@@ -38,16 +38,16 @@ struct Git {
 	limit int         [required]
 mut:
 	remote     GitRemote
-	changelog  map[string]string
+	release    map[string]string
 	release_id int
 }
 
 fn git_build(pp PrettyPrint, limit int) Git {
 	return {
-		pp:        pp,
-		limit:     limit
-		remote:    GitRemote{}
-		changelog: map{}
+		pp:      pp,
+		limit:   limit
+		remote:  GitRemote{}
+		release: map{}
 	}
 }
 
@@ -102,7 +102,7 @@ fn (mut g Git) get_remote_info() ? {
 	g.pp.info('executing on repository ${g.pp.emph(repo)} of user ${g.pp.emph(user)}')
 }
 
-fn (mut g Git) gen_repo_changelog() ? {
+fn (mut g Git) gen_changelog(with_description bool) ? {
 	nt := g.pp.errmsg('no tags found')
 
 	mut res := os.execute_or_panic('git tag --sort=-creatordate')
@@ -121,6 +121,8 @@ fn (mut g Git) gen_repo_changelog() ? {
 		last_ref = tags[1].trim_space()
 	}
 
+	mut content := ''
+
 	g.pp.info('generating changelog from ${g.pp.emph(last_ref)} to ${g.pp.emph(current_ref)}')
 	res = os.execute_or_panic('git log --pretty=oneline ${last_ref}..${current_ref}')
 
@@ -129,18 +131,42 @@ fn (mut g Git) gen_repo_changelog() ? {
 	logs.pop()
 	g.pp.debug('git_logs', '\n$logs')
 
+	mut release_title := current_ref
+	if with_description {
+		res = os.execute_or_panic('git log -1 --pretty=%B $current_ref')
+		g.pp.debug('git_last_commit', '${json.encode(res.output)}')
+
+		mut lines := res.output.split('\n')
+		release_title = lines[0].trim(' ')
+		g.pp.debug('git_release_title', release_title)
+
+		lines.delete(0)
+		for {
+			if lines.len > 0 && lines.last().trim(' ') == '' {
+				lines.pop()
+				continue
+			}
+
+			break
+		}
+
+		if lines.len > 0 {
+			content = '<h1>Description</h1>' + lines.join('\n')
+		}
+	}
+
 	mut limit := if logs.len > g.limit { g.limit } else { logs.len }
 	limit = if g.limit == -1 { logs.len } else { limit }
 	g.pp.debug('git_chosed_commit_limit', '$limit')
 
-	mut changelog := ''
+	mut items := ''
 	for i := 0; i < limit; i++ {
 		log := logs[i]
 		sha := log[0 .. 40]
 		msg := log[41 .. log.len]
 
 		commit_url := 'https://github.com/$g.remote.user/$g.remote.repo/commit'
-		changelog += '<li><a href="$commit_url/$sha"><code>${sha[0 .. 7]}</code></a> $msg</li>'
+		items += '<li><a href="$commit_url/$sha"><code>${sha[0 .. 7]}</code></a> $msg</li>'
 	}
 
 	mut ommited_commit_msg := ''
@@ -149,15 +175,19 @@ fn (mut g Git) gen_repo_changelog() ? {
 		ommited_commit_msg = '<i>$omitted_commits commits were ommited from this list</i><br><br>'
 	}
 
-	changelog = '<h1>Changelog</h1>'
+	content += '<h1>Changelog</h1>'
 		+ ommited_commit_msg
-		+ '<ul>$changelog</ul>'
+		+ '<ul>$items</ul>'
 
-	g.pp.debug('generated_changelog', '\n$changelog')
-	g.changelog = map{ 'content': changelog, 'tag': current_ref }
+	g.pp.debug('generated_changelog', '\n$content')
+	g.release = map{
+		'content': content,
+		'tag': current_ref,
+		'title': release_title,
+	}
 }
 
-fn (mut g Git) gen_checksum_sec(annexes []Annex) {
+fn (mut g Git) gen_checksum(annexes []Annex) {
 	mut annex_sec := '<h1>Checksum (SHA256)</h1>'
 
 	mut checksum_items := ''
@@ -167,7 +197,7 @@ fn (mut g Git) gen_checksum_sec(annexes []Annex) {
 
 	annex_sec += '<ul>$checksum_items</ul>'
 	g.pp.debug('generated_checksum', '\n$annex_sec')
-	g.changelog['content'] += annex_sec
+	g.release['content'] += annex_sec
 }
 
 fn (g Git) get_call(url string, token string, data string) CURLCall {
@@ -196,15 +226,15 @@ fn (g Git) upload_asset(token string, annex Annex) ?CURLResponse {
 	return res
 }
 
-fn (mut g Git) create_release(token string) ?(CURLResponse, ReleaseResponse) {
+fn (mut g Git) create_release(token string, is_pre_release bool) ?(CURLResponse, ReleaseResponse) {
 	g.pp.info_nl('creating release... ')
 	payload := ReleaseBody{
 		target_commitish: 'master'
-		tag_name:   g.changelog['tag']
-		name:       g.changelog['tag']
-		body:       g.changelog['content']
+		tag_name:   g.release['tag']
+		name:       g.release['title']
+		body:       g.release['content']
+		prerelease: is_pre_release
 		draft:      false
-		prerelease: false
 	}
 
 	url  := 'https://api.github.com/repos/$g.remote.user/$g.remote.repo/releases'

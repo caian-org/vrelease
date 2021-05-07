@@ -57,13 +57,18 @@ fn main() {
 
 	debug_mode := cli.is_set('debug')
 	no_color   := cli.is_set('no-color')
-	add_sum    := cli.is_set('checksum')
+	add_sum    := cli.is_set('add-checksum')
+	add_descr  := cli.is_set('add-description')
+	pre_rel    := cli.is_set('pre-release')
 	limit      := cli.get_limit()
 	annexes    := cli.get_annexes()
 
 	pp := PrettyPrint{ debug_mode, no_color }
 	pp.debug('flag_debug_mode', '$debug_mode')
 	pp.debug('flag_no_color', '$no_color')
+	pp.debug('flag_add_checksum', '$add_sum')
+	pp.debug('flag_add_description', '$add_descr')
+	pp.debug('flag_pre_release', '$pre_rel')
 	pp.debug('flag_limit', '$limit')
 	pp.debug('flag_attach', '$annexes')
 	start_msg(no_color, started_at, meta_d)
@@ -98,20 +103,22 @@ fn main() {
 
 	mut git := git_build(pp, limit)
 	git.get_remote_info() or { panic(err.msg) }
-	git.gen_repo_changelog() or { panic(err.msg) }
-	if add_sum {
-		git.gen_checksum_sec(resolved_annexes)
-	}
+	git.gen_changelog(add_descr) or { panic(err.msg) }
+	if add_sum { git.gen_checksum(resolved_annexes) }
 
-	release_res, release := git.create_release(gh_token) or { panic(err.msg) }
+	release_res, release := git.create_release(gh_token, pre_rel) or { panic(err.msg) }
 	if release_res.code != 201 {
 		println(pp.fail('failed'))
 		panic(pp.errmsg('failed with code $release_res.code;\n\n$release_res.body'))
 	}
 
-	println(pp.success('succeed'))
+	println(pp.success('succeeded'))
 	pp.info('release id is ${pp.emph(release.id.str())}')
 	pp.info('available @ ${pp.href(release.html_url)}')
+
+	if add_sum {
+		pp.info('checksums calculated')
+	}
 
 	for annex in resolved_annexes {
 		pp.info_nl('uploading asset "$annex.filename"... ')
@@ -120,9 +127,9 @@ fn main() {
 			panic(pp.errmsg(err.msg))
 		}
 
-		println(pp.success('succeed'))
+		println(pp.success('succeeded'))
 	}
 
 	duration := time.now() - started_at
-	pp.info('done; took ${pp.emph(duration.milliseconds().str() + 'ms')}')
+	pp.info('done; took ${pp.emph(duration.milliseconds().str() + 'ms')}\n')
 }
