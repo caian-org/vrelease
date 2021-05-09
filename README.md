@@ -7,12 +7,15 @@
 
 <img src="icon.svg" height="240px" align="right"/>
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+`vrelease` is a lightweight and straightforward release tool for GitHub and
+GitLab (soon). It is packed as a single binary that requires no configuration
+file and weights around 100kb on Linux/MacOS and 300kb on Windows. `vrelease`
+is also:
 
-- **Donec.** Aenean ultricies consectetur odio, varius gravida
-- **Phasellus.** Vestibulum ante ipsum primis in faucibus
-- **Mauris.** Sed et auctor dui, eget faucibus dolor, aliquam et tincidunt dui.
-- **Suspendisse.** Morbi at est a mauris scelerisque ornare
+- **Simple.** All required paramenters are detected automatically
+- **Minimal.** Only `git` and `curl` are required for execution
+- **Agnostic.** `vrelease` was idealized as a [`goreleaser`][goreleaser] language independent alternative
+- **CI/CD ready.** Designed to be integrated in CI/CD pipelines of any provider
 
 [gh-build-shield]: https://img.shields.io/github/workflow/status/caian-org/vrelease/build?label=build&logo=github&style=flat-square
 [gh-build-url]: https://github.com/caian-org/vrelease/actions/workflows/build-many.yml
@@ -25,6 +28,8 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 
 [tag-shield]: https://img.shields.io/github/tag/caian-org/vrelease.svg?logo=git&logoColor=FFF&style=flat-square
 [tag-url]: https://github.com/caian-org/vrelease/releases
+
+[goreleaser]: https://github.com/goreleaser/goreleaser
 
 
 ## License
