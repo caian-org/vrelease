@@ -11,10 +11,10 @@
 GitLab. It is packed as a single binary that requires no configuration file and
 weights around 100kb on Linux/MacOS and 300kb on Windows. This tool is also:
 
-- **Simple.** All required paramenters are detected automatically.
-- **Minimal.** Only `git` and `curl` are required for execution.
-- **Agnostic.** Idealized as a language independent alternative for [`goreleaser`][goreleaser].
-- **CI/CD ready.** Designed to be integrated in CI/CD pipelines of any provider.
+- **Simple.** All required paramenters are detected automatically
+- **Minimal.** Only `git` and `curl` are required for execution
+- **Agnostic.** Idealized as a language independent alternative for [`goreleaser`][goreleaser]
+- **CI/CD ready.** Designed to be integrated in CI/CD pipelines of any provider
 
 [gh-build-shield]: https://img.shields.io/github/workflow/status/caian-org/vrelease/build?label=build&logo=github&style=flat-square
 [gh-build-url]: https://github.com/caian-org/vrelease/actions/workflows/build-many.yml
@@ -57,6 +57,22 @@ a message/description can also be added using the last commit that closes the
 tag. The API authentication to either GitHub or GitLab is made by tokens. The
 token should be generated for you account and exposed inside the pipeline via
 the `VRELEASE_AUTH_TOKEN` environment variable.
+
+
+### Example
+
+[This commit][ex-commit] closes the `v1.1.0` tag of [this project][ex-proj].
+When using the following command:
+
+```sh
+vrelease --add-checksum --add-description --attach my_artifact
+```
+
+The generated release looks [like this][ex-release]
+
+[ex-commit]: https://github.com/vrelease/vrtp/commit/6174cf7f03f741e4652d70e85a633277ce5f1069
+[ex-proj]: https://github.com/vrelease/vrtp
+[ex-release]: https://github.com/vrelease/vrtp/releases/tag/v1.1.0
 
 
 ### Help message
