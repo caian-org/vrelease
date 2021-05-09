@@ -32,14 +32,19 @@ is also:
 [goreleaser]: https://github.com/goreleaser/goreleaser
 
 
+## How can I use it?
+
+<a href="https://asciinema.org/a/412861" target="_blank"><img src="https://asciinema.org/a/412861.svg" align="center"/></a>
+
+
 ## How can I get it?
 
 `vrelease` is distributed in many pre-built forms:
 
-- For NodeJS projects, use [`vrelease-js`][vr-js];
-- For Python projects, use [`vrelease-py`][vr-py];
+- For NodeJS projects, use [vrelease-js][vr-js];
+- For Python projects, use [vrelease-py][vr-py];
 - For MacOS systems, use the [homebrew formula][vr-brew];
-- For all other needs, download from the [releases page][vr-rels]
+- For all other needs, download from the [releases page][vr-rels];
 
 [vr-js]: https://github.com/vrelease/vrelease-js
 [vr-py]: https://github.com/vrelease/vrelease-py
