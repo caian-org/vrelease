@@ -32,7 +32,7 @@ is also:
 [goreleaser]: https://github.com/goreleaser/goreleaser
 
 
-# How can I use it?
+## How can I use it?
 
 <br/>
 <p align="center">
@@ -40,7 +40,7 @@ is also:
 </p>
 
 
-# How can I get it?
+## How can I get it?
 
 `vrelease` is distributed in many pre-built forms:
 
@@ -68,7 +68,25 @@ make build-release
 [makefile]: https://github.com/vrelease/vrelease/blob/master/Makefile
 
 
-# License
+## Can I contribute?
+
+Yes, contributions are welcomed. You can contribute with bugfixes and minor
+features. For bigger, more complex features or architectural changes, please
+contact me beforehand.
+
+If you wish to contribute:
+
+- Fork it (https://github.com/vrelease/vrelease/fork)
+- Create your feature branch (`git checkout -b my-new-feature`)
+- Commit your changes (`git commit -am 'Add some feature'`)
+- Push to the branch (`git push origin my-new-feature`)
+- Create a new Pull Request
+
+Large contributions must contain a notice stating that the owner (i.e., the
+contributor) waive it's copyrights to the Public Domain.
+
+
+## License
 
 To the extent possible under law, [Caian Rais Ertl][me] has waived __all
 copyright and related or neighboring rights to this work__. In the spirit of
