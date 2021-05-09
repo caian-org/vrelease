@@ -32,14 +32,15 @@ is also:
 [goreleaser]: https://github.com/goreleaser/goreleaser
 
 
-## How can I use it?
+# How can I use it?
 
+<br/>
 <p align="center">
   <a href="https://asciinema.org/a/412861" target="_blank"><img src=".docs/demo.gif" height="400px"></a>
 </p>
 
 
-## How can I get it?
+# How can I get it?
 
 `vrelease` is distributed in many pre-built forms:
 
@@ -67,7 +68,7 @@ make build-release
 [makefile]: https://github.com/vrelease/vrelease/blob/master/Makefile
 
 
-## License
+# License
 
 To the extent possible under law, [Caian Rais Ertl][me] has waived __all
 copyright and related or neighboring rights to this work__. In the spirit of
