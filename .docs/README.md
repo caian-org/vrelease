@@ -31,6 +31,17 @@ weights around 100kb on Linux/MacOS and 300kb on Windows. This tool is also:
 [goreleaser]: https://github.com/goreleaser/goreleaser
 
 
+## Table of contents
+
+- [How can I use it?](#how-can-i-use-it)
+    - [Execution example](#execution-example)
+    - [CI/CD examples](#cicd-examples)
+    - [Help message](#help-message)
+- [How can I get it?](#how-can-i-get-it)
+- [Can I contribute?](#can-i-contribute)
+- [License](#license)
+
+
 ## How can I use it?
 
 `vrelease` is a tool that **generates releases on GitHub and GitLab**. It
@@ -59,7 +70,7 @@ token should be generated for you account and exposed inside the pipeline via
 the `VRELEASE_AUTH_TOKEN` environment variable.
 
 
-### Example
+### Execution example
 
 [This commit][ex-commit] closes the `v1.1.0` tag of [this project][ex-proj].
 When using the following command:
@@ -73,6 +84,11 @@ The generated release looks [like this][ex-release]
 [ex-commit]: https://github.com/vrelease/vrtp/commit/6174cf7f03f741e4652d70e85a633277ce5f1069
 [ex-proj]: https://github.com/vrelease/vrtp
 [ex-release]: https://github.com/vrelease/vrtp/releases/tag/v1.1.0
+
+
+### CI/CD examples
+
+*TODO*
 
 
 ### Help message
