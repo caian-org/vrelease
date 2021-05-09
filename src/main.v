@@ -28,7 +28,7 @@ fn get_github_token() (bool, string) {
 	env := os.environ()
 	mut gh_token := ''
 	mut gh_token_is_undef := true
-	gh_token_var := 'VRELEASE_GITHUB_TOKEN'
+	gh_token_var := 'VRELEASE_AUTH_TOKEN'
 
 	if gh_token_var in env {
 		gh_token = env[gh_token_var].trim_space()
