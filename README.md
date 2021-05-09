@@ -32,6 +32,34 @@ is also:
 [goreleaser]: https://github.com/goreleaser/goreleaser
 
 
+## How can I get it?
+
+`vrelease` is distributed in many pre-built forms:
+
+- For NodeJS projects, use [`vrelease-js`][vr-js];
+- For Python projects, use [`vrelease-py`][vr-py];
+- For MacOS systems, use the [homebrew formula][vr-brew];
+- For all other needs, download from the [releases page][vr-rels]
+
+[vr-js]: https://github.com/vrelease/vrelease-js
+[vr-py]: https://github.com/vrelease/vrelease-py
+[vr-brew]: https://github.com/vrelease/homebrew-formula
+[vr-rels]: https://github.com/vrelease/vrelease/releases
+
+You can also build from source:
+
+`vrelease` is implemented in [V][vlang], a language inspired by Golang, Rust
+and Python that compiles to human-readable C. After downloading and installing
+V, use make (see [`Makefile`][makefile]) with build-release:
+
+```sh
+make build-release
+```
+
+[vlang]: https://github.com/vlang/v
+[makefile]: https://github.com/vrelease/vrelease/blob/master/Makefile
+
+
 ## License
 
 To the extent possible under law, [Caian Rais Ertl][me] has waived __all
