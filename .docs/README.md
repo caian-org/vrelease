@@ -8,13 +8,12 @@
 <img src=".docs/icon.svg" height="240px" align="right"/>
 
 `vrelease` is a lightweight and straightforward release tool for GitHub and
-GitLab (soon). It is packed as a single binary that requires no configuration
-file and weights around 100kb on Linux/MacOS and 300kb on Windows. This project
-is also:
+GitLab. It is packed as a single binary that requires no configuration file and
+weights around 100kb on Linux/MacOS and 300kb on Windows. This tool is also:
 
 - **Simple.** All required paramenters are detected automatically.
 - **Minimal.** Only `git` and `curl` are required for execution.
-- **Agnostic.** Idealized as a language independent alternative of [`goreleaser`][goreleaser].
+- **Agnostic.** Idealized as a language independent alternative for [`goreleaser`][goreleaser].
 - **CI/CD ready.** Designed to be integrated in CI/CD pipelines of any provider.
 
 [gh-build-shield]: https://img.shields.io/github/workflow/status/caian-org/vrelease/build?label=build&logo=github&style=flat-square
@@ -34,10 +33,52 @@ is also:
 
 ## How can I use it?
 
+`vrelease` is a tool that **generates releases on GitHub and GitLab**. It
+should be used in the context of a CI/CD pipeline, at the delivery stage. The
+pipeline should be declared in a way that, when a new tag is pushed, the tool
+is executed after the tests passed, so a new release is automatically created
+with changelog.
+
 <br/>
 <p align="center">
   <a href="https://asciinema.org/a/412861" target="_blank"><img src=".docs/demo.gif" height="400px"></a>
 </p>
+<br/>
+
+The tool lists all the project's tags and compare the changes from the last tag
+to the current one -- If no last tag is detected, it will use the master branch
+as the last reference. It then formats the log to an HTML changelog and creates
+on the provider via an API call. The username, repository name, connection
+protocol (HTTPS or SSH) and provider (GitHub or GitLab) detection is based upon
+the repository remote URL.
+
+Optionally, one or more artifacts can be attached to the release. The title and
+a message/description can also be added using the last commit that closes the
+tag. The API authentication to either GitHub or GitLab is made by tokens. The
+token should be generated for you account and exposed inside the pipeline via
+the `VRELEASE_AUTH_TOKEN` environment variable.
+
+
+### Help message
+
+```
+
+Usage: vrelease [flags]
+
+KISS solution to easily create project releases
+
+Flags:
+  -a  --attach           attaches (uploads) a file to the release
+  -i  --add-description  adds release description from last commit
+  -c  --add-checksum     adds file integrity data (SHA256 checksum)
+  -p  --pre-release      identifies the release as non-production ready
+  -l  --limit            sets a limit to the amount of changelog lines
+  -d  --debug            enables debug mode
+  -n  --no-color         disables output with colors
+  -h  --help             prints help information
+  -v  --version          prints version information
+
+```
 
 
 ## How can I get it?
