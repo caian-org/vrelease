@@ -131,10 +131,10 @@ You can also build from source:
 
 `vrelease` is implemented in [V][vlang], a language inspired by Golang, Rust
 and Python that compiles to human-readable C. After downloading and installing
-V, use make (see [`Makefile`][makefile]) with build-release:
+V, use make (see [`Makefile`][makefile]) with `release`:
 
 ```sh
-make build-release
+make release
 ```
 
 [vlang]: https://github.com/vlang/v
