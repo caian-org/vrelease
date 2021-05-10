@@ -117,14 +117,16 @@ Flags:
 
 `vrelease` is distributed in many pre-built forms:
 
-- For NodeJS projects, use [vrelease-js][vr-js];
-- For Python projects, use [vrelease-py][vr-py];
-- For MacOS systems, use the [homebrew formula][vr-brew];
+- For NodeJS projects, use the [js-wrapper][vr-js];
+- For Python projects, use the [py-wrapper][vr-py];
+- For MacOS systems, use the [homebrew-formula][vr-brew];
+- For Docker-based systems, use the [docker-image][vr-docker];
 - For all other needs, download from the [releases page][vr-rels];
 
-[vr-js]: https://github.com/vrelease/vrelease-js
-[vr-py]: https://github.com/vrelease/vrelease-py
+[vr-js]: https://github.com/vrelease/js-wrapper
+[vr-py]: https://github.com/vrelease/py-wrapper
 [vr-brew]: https://github.com/vrelease/homebrew-formula
+[vr-docker]: https://github.com/vrelease/docker-image
 [vr-rels]: https://github.com/vrelease/vrelease/releases
 
 You can also build from source:
