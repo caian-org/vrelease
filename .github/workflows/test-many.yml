@@ -67,7 +67,7 @@ jobs:
           cp /tmp/do-test.sh .
           bash do-test.sh
         env:
-          VRELEASE_GITHUB_TOKEN: "${{ secrets.GH_TOKEN }}"
+          VRELEASE_AUTH_TOKEN: "${{ secrets.GH_TOKEN }}"
 
   # ---------------------------------------------------------------------------
   on-macos:
@@ -117,7 +117,7 @@ jobs:
           cp /tmp/do-test.sh .
           bash do-test.sh
         env:
-          VRELEASE_GITHUB_TOKEN: "${{ secrets.GH_TOKEN }}"
+          VRELEASE_AUTH_TOKEN: "${{ secrets.GH_TOKEN }}"
 
   # ---------------------------------------------------------------------------
   on-windows:
@@ -167,4 +167,44 @@ jobs:
           cp /tmp/do-test.sh .
           bash do-test.sh
         env:
-          VRELEASE_GITHUB_TOKEN: "${{ secrets.GH_TOKEN }}"
+          VRELEASE_AUTH_TOKEN: "${{ secrets.GH_TOKEN }}"
+
+  # ---------------------------------------------------------------------------
+  on-docker:
+    runs-on: ubuntu-latest
+    needs: [on-linux, on-macos, on-windows]
+    steps:
+      - name: Checkout to vrelease
+        uses: actions/checkout@v2
+
+      - name: Build image
+        run: docker build -t vrelease .
+
+      - name: Get test file
+        run: cp "${GITHUB_WORKSPACE}/.github/do-docker-test.sh" /tmp
+
+      - name: Checkout to playground
+        uses: actions/checkout@v2
+        with:
+          repository: "caian-org/vrtp"
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config --global user.email "hi@caian.org"
+          git config --global user.name "Caian R. Ertl"
+
+      - name: Download committer
+        run: curl -L -O "https://github.com/caian-org/committer/releases/download/v0.3.0/committer-linux"
+
+      - name: Prepare binaries
+        run: |
+          mv committer-linux committer
+          chmod +x committer
+
+      - name: Run tests
+        run: |
+          cp /tmp/do-docker-test.sh .
+          bash do-docker-test.sh
+        env:
+          VRELEASE_AUTH_TOKEN: "${{ secrets.GH_TOKEN }}"

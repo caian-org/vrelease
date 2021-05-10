@@ -67,4 +67,4 @@ jobs:
             --attach vrelease-macos \
             --attach vrelease-windows.exe
         env:
-          VRELEASE_GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          VRELEASE_AUTH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
