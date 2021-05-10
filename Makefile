@@ -27,8 +27,11 @@ build: clean
 	@du -h $(ARTIFACT) | cut -f -1
 	@printf "\nDONE\n"
 
-build-debug: VFLAGS += -g -cstrict
-build-debug: build
+debug: VFLAGS += -g -cstrict
+debug: build
 
-build-release: VFLAGS += -prod -compress -nocolor
-build-release: build
+release: VFLAGS += -prod -compress -nocolor
+release: build
+
+static: VFLAGS += -cflags '--static'
+static: release
