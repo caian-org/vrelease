@@ -6,8 +6,8 @@ RUN apk update && \
 FROM base AS build
 WORKDIR /vr
 COPY .git     /vr/.git
+COPY .scripts /vr/.scripts
 COPY src      /vr/src
-COPY scripts  /vr/scripts
 COPY Makefile /vr
 COPY v.mod    /vr
 RUN make static
