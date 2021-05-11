@@ -10,7 +10,7 @@ fn start_msg(no_color bool, now time.Time, md map[string]string) {
 	p_version := md['program_version']
 	t_kernel  := md['target_kernel']
 	t_arch    := md['target_arch']
-	vr_hi     := '$p_name $p_version $t_kernel/$t_arch'
+	vr_hi     := '$p_name $p_version - $t_kernel/$t_arch'
 	vr_at     := 'program has started @ ${now.str()}'
 
 	mut m := []string{}

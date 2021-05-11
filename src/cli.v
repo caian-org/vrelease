@@ -119,7 +119,7 @@ fn (mut c Cli) act() bool {
 	}
 
 	if c.is_set('version') {
-		println('$c.cmd.name $c.cmd.version $c.target_kernel/$c.target_arch')
+		println('$c.cmd.name $c.cmd.version - $c.target_kernel/$c.target_arch')
 		return true
 	}
 
