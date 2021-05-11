@@ -33,7 +33,7 @@ jobs:
       - name: Checkout to playground
         uses: actions/checkout@v2
         with:
-          repository: "caian-org/vrtp"
+          repository: "vrelease/vrtp"
           fetch-depth: 0
 
       - name: Configure git
@@ -83,7 +83,7 @@ jobs:
       - name: Checkout to playground
         uses: actions/checkout@v2
         with:
-          repository: "caian-org/vrtp"
+          repository: "vrelease/vrtp"
           fetch-depth: 0
 
       - name: Configure git
@@ -133,7 +133,7 @@ jobs:
       - name: Checkout to playground
         uses: actions/checkout@v2
         with:
-          repository: "caian-org/vrtp"
+          repository: "vrelease/vrtp"
           fetch-depth: 0
 
       - name: Configure git
@@ -186,7 +186,7 @@ jobs:
       - name: Checkout to playground
         uses: actions/checkout@v2
         with:
-          repository: "caian-org/vrtp"
+          repository: "vrelease/vrtp"
           fetch-depth: 0
 
       - name: Configure git
