@@ -7,7 +7,7 @@ run_test() {
     docker run \
         --rm \
         -e VRELEASE_AUTH_TOKEN="$TOKEN" \
-        -v "${REPO_PATH}:/vr/" \
+        -v "${GITHUB_WORKSPACE}:/vr/" \
         vrelease $@
     sleep 5
 }
