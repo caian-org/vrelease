@@ -5,8 +5,7 @@ import cli { Command, Flag }
 
 
 struct Cli {
-	target_kernel string [required]
-	target_arch   string [required]
+	signature string [required]
 mut:
 	cmd Command [required]
 }
@@ -84,11 +83,8 @@ fn cli_build(md map[string]string) Cli {
 		description: 'prints version information'
 	})
 
-	return Cli{
-		cmd: cmd
-		target_kernel: md['target_kernel']
-		target_arch:   md['target_arch']
-	}
+	signature := program_signature(md)
+	return Cli{ signature, cmd }
 }
 
 fn (c Cli) f() []Flag {
@@ -119,7 +115,7 @@ fn (mut c Cli) act() bool {
 	}
 
 	if c.is_set('version') {
-		println('$c.cmd.name $c.cmd.version - $c.target_kernel/$c.target_arch')
+		println(c.signature)
 		return true
 	}
 
