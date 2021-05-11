@@ -207,4 +207,4 @@ jobs:
           cp /tmp/do-docker-test.sh .
           bash do-docker-test.sh
         env:
-          VRELEASE_AUTH_TOKEN: "${{ secrets.GH_TOKEN }}"
+          TOKEN: "${{ secrets.GH_TOKEN }}"
