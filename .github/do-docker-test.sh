@@ -4,7 +4,11 @@ set -ex
 
 run_test() {
     ./committer
-    docker run -e VRELEASE_AUTH_TOKEN="$TOKEN" vrelease $@
+    docker run \
+        --rm \
+        -e VRELEASE_AUTH_TOKEN="$TOKEN" \
+        -v "${pwd}:/" \
+        vrelease $@
     sleep 5
 }
 
