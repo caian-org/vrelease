@@ -18,5 +18,5 @@ run_test -l 5
 run_test -d -n
 run_test -a committer
 run_test -c -a committer
-run_test -a committer -a vrelease -d -l 8
+run_test -a committer -d -l 8
 run_test -i -c -a committer
