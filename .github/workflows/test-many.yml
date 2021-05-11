@@ -210,3 +210,4 @@ jobs:
           bash do-docker-test.sh
         env:
           TOKEN: "${{ secrets.GH_TOKEN }}"
+          REPO_PATH: "$GITHUB_WORKSPACE"
