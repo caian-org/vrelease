@@ -13,10 +13,11 @@ COPY v.mod    /vr
 RUN make static
 
 FROM alpine:3.13 AS plat
+RUN mkdir -p /wd
 RUN apk update && \
     apk add --no-cache git curl
 
 FROM plat AS run
-WORKDIR /vr
-COPY --from=build /vr/vrelease /vr/vrelease
-ENTRYPOINT ["/vr/vrelease"]
+WORKDIR /wd
+COPY --from=build /vr/vrelease /usr/local/bin/vrelease
+ENTRYPOINT ["vrelease"]
