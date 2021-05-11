@@ -17,5 +17,6 @@ RUN apk update && \
     apk add --no-cache git curl
 
 FROM plat AS run
-COPY --from=build /vr/vrelease /vrelease
-ENTRYPOINT ["/vrelease"]
+WORKDIR /vr
+COPY --from=build /vr/vrelease /vr/vrelease
+ENTRYPOINT ["/vr/vrelease"]

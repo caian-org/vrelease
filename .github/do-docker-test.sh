@@ -7,7 +7,7 @@ run_test() {
     docker run \
         --rm \
         -e VRELEASE_AUTH_TOKEN="$TOKEN" \
-        -v "${pwd}:/" \
+        -v "${pwd}:/vr" \
         vrelease $@
     sleep 5
 }
