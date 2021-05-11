@@ -176,6 +176,8 @@ jobs:
     steps:
       - name: Checkout to vrelease
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Build image
         run: docker build -t vrelease .
