@@ -5,13 +5,18 @@ import term
 import time
 
 
-fn start_msg(no_color bool, now time.Time, md map[string]string) {
+fn program_signature(md map[string]string) string {
 	p_name    := md['program_name']
 	p_version := md['program_version']
+	c_hash    := md['commit_hash']
 	t_kernel  := md['target_kernel']
 	t_arch    := md['target_arch']
-	vr_hi     := '$p_name $p_version $t_kernel/$t_arch'
-	vr_at     := 'program has started @ ${now.str()}'
+	return '$p_name $p_version $c_hash - $t_kernel/$t_arch'
+}
+
+fn start_msg(no_color bool, now time.Time, md map[string]string) {
+	vr_hi := program_signature(md)
+	vr_at := 'program has started @ ${now.str()}'
 
 	mut m := []string{}
 	if no_color {

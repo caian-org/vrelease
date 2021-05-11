@@ -20,6 +20,11 @@ fn get_last_tag() ?string {
 	return 'UNRELEASED'
 }
 
+fn get_last_commit_hash() ?string {
+	res := os.execute_or_panic('git rev-parse --short HEAD')
+	return res.output.trim_space()
+}
+
 fn main() {
 	src_dir := os.join_path(os.getwd(), '..', 'src')
 	meta_f  := os.join_path(src_dir, '_meta')
@@ -27,6 +32,10 @@ fn main() {
 
 	last_tag := get_last_tag() or {
 		panic(errmsg('could not get the last git tag; got "$err.msg"'))
+	}
+
+	last_commit_hash := get_last_commit_hash() or {
+		panic(errmsg('could not get the last commit hash; got "$err.msg"'))
 	}
 
 	uname  := os.uname()
@@ -39,6 +48,7 @@ fn main() {
 		+ '* writing to:   $meta_t\n'
 		+ '\n'
 		+ '* program version: $last_tag\n'
+		+ '* commit hash:     $last_commit_hash\n'
 		+ '* target_arch:     $arch\n'
 		+ '* target_kernel:   $kernel\n\n'
 	)
@@ -50,6 +60,7 @@ fn main() {
 		+ '/* this file is auto-generated */\n'
 		+ meta_c
 			.replace(':tag', last_tag)
+			.replace(':hash', last_commit_hash)
 			.replace(':arch', arch)
 			.replace(':kernel', kernel)
 

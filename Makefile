@@ -20,7 +20,7 @@ build: clean
 	@echo "$(PATH)" | tr ':' '\n' | xargs -n 1 printf "   - %s\n"
 	@printf "\n"
 	@printf "\n>>> write-meta\n"
-	cd scripts && $(VC) run write-meta.v
+	cd .scripts && $(VC) run write-meta.v
 	@printf "\n>>> compile\n"
 	cd $(HERE) && $(VC) $(VFLAGS) $(SRC_DIR) -o $(ARTIFACT)
 	@printf "\n* binary size: "

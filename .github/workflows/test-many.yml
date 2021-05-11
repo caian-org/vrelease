@@ -33,7 +33,7 @@ jobs:
       - name: Checkout to playground
         uses: actions/checkout@v2
         with:
-          repository: "caian-org/vrtp"
+          repository: "vrelease/vrtp"
           fetch-depth: 0
 
       - name: Configure git
@@ -83,7 +83,7 @@ jobs:
       - name: Checkout to playground
         uses: actions/checkout@v2
         with:
-          repository: "caian-org/vrtp"
+          repository: "vrelease/vrtp"
           fetch-depth: 0
 
       - name: Configure git
@@ -133,7 +133,7 @@ jobs:
       - name: Checkout to playground
         uses: actions/checkout@v2
         with:
-          repository: "caian-org/vrtp"
+          repository: "vrelease/vrtp"
           fetch-depth: 0
 
       - name: Configure git
@@ -176,6 +176,8 @@ jobs:
     steps:
       - name: Checkout to vrelease
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Build image
         run: docker build -t vrelease .
@@ -186,7 +188,7 @@ jobs:
       - name: Checkout to playground
         uses: actions/checkout@v2
         with:
-          repository: "caian-org/vrtp"
+          repository: "vrelease/vrtp"
           fetch-depth: 0
 
       - name: Configure git
@@ -207,4 +209,4 @@ jobs:
           cp /tmp/do-docker-test.sh .
           bash do-docker-test.sh
         env:
-          VRELEASE_AUTH_TOKEN: "${{ secrets.GH_TOKEN }}"
+          TOKEN: "${{ secrets.GH_TOKEN }}"

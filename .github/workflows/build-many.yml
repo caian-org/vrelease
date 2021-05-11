@@ -31,6 +31,8 @@ jobs:
     steps:
       - name: Checkout to vrelease
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Pre-build steps
         run: |
@@ -91,9 +93,13 @@ jobs:
     steps:
       - name: Checkout to vrelease
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Build image
         run: docker build -t vrelease .
 
-      - name: Run test
-        run: docker run --rm vrelease -h
+      - name: After build run
+        run: |
+          docker run --rm vrelease -h
+          docker run --rm vrelease -v

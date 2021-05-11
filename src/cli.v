@@ -5,6 +5,7 @@ import cli { Command, Flag }
 
 
 struct Cli {
+	signature string [required]
 mut:
 	cmd Command [required]
 }
@@ -82,7 +83,8 @@ fn cli_build(md map[string]string) Cli {
 		description: 'prints version information'
 	})
 
-	return Cli{ cmd }
+	signature := program_signature(md)
+	return Cli{ signature, cmd }
 }
 
 fn (c Cli) f() []Flag {
@@ -113,7 +115,7 @@ fn (mut c Cli) act() bool {
 	}
 
 	if c.is_set('version') {
-		println(c.cmd.version)
+		println(c.signature)
 		return true
 	}
 
