@@ -97,7 +97,10 @@ fn (c Cli) is_set(flag string) bool {
 
 fn (c Cli) get_limit() int {
 	v := c.f().get_int('limit') or { 0 }
-	if v <= 0 { return -1 }
+	if v <= 0 {
+		return -1
+	}
+
 	return v
 }
 

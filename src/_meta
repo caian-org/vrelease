@@ -1,12 +1,12 @@
 /*       DO NOT TOUCH IT       */
 
 fn get_meta_d() map[string]string {
-	return {
-		'program_name': 'vrelease'
-		'program_version': ':tag'
+	return map{
+		'program_name':        'vrelease'
+		'program_version':     ':tag'
 		'program_description': 'KISS solution to easily create project releases'
-		'commit_hash': ':hash'
-		'target_arch': ':arch'
-		'target_kernel': ':kernel'
+		'commit_hash':         ':hash'
+		'target_arch':         ':arch'
+		'target_kernel':       ':kernel'
 	}
 }

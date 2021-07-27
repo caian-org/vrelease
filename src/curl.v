@@ -17,7 +17,12 @@ struct CURLResponse {
 }
 
 fn build_curl(pp PrettyPrint, url string, filep string) CURLCall {
-	return { pp: pp, url: url, filep: filep, headers: map{} }
+	return CURLCall{
+		pp:      pp,
+		url:     url,
+		filep:   filep,
+		headers: map{}
+	}
 }
 
 fn (mut c CURLCall) add_header(key string, value string) {

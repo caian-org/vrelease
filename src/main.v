@@ -11,6 +11,7 @@ fn program_signature(md map[string]string) string {
 	c_hash    := md['commit_hash']
 	t_kernel  := md['target_kernel']
 	t_arch    := md['target_arch']
+
 	return '$p_name $p_version $c_hash - $t_kernel/$t_arch'
 }
 
@@ -26,6 +27,7 @@ fn start_msg(no_color bool, now time.Time, md map[string]string) {
 		m << term.bold(vr_hi)
 		m << term.gray(vr_at)
 	}
+
 	println('\n${m.join('\n')}\n')
 }
 
@@ -37,7 +39,9 @@ fn get_github_token() (bool, string) {
 
 	if gh_token_var in env {
 		gh_token = env[gh_token_var].trim_space()
-		if gh_token != '' { gh_token_is_undef = false }
+		if gh_token != '' {
+			gh_token_is_undef = false
+		}
 	}
 
 	return gh_token_is_undef, gh_token
@@ -78,18 +82,28 @@ fn main() {
 	pp.debug('flag_attach', '$annexes')
 	start_msg(no_color, started_at, meta_d)
 
-	git_bin_path  := check_dependency('git') or { panic(pp.errmsg(err.msg)) }
-	curl_bin_path := check_dependency('curl') or { panic(pp.errmsg(err.msg)) }
+	git_bin_path  := check_dependency('git') or {
+		panic(pp.errmsg(err.msg))
+	}
+
+	curl_bin_path := check_dependency('curl') or {
+		panic(pp.errmsg(err.msg))
+	}
+
 	pp.debug('git_binary_path', '$git_bin_path')
 	pp.debug('curl_binary_path', '$curl_bin_path')
 
 	mut resolved_annexes := []Annex{}
 	for annex in annexes {
-		resolved_p := file_resolve_path(annex) or { panic(pp.errmsg(err.msg)) }
+		resolved_p := file_resolve_path(annex) or {
+			panic(pp.errmsg(err.msg))
+		}
 
 		mut sum := ''
 		if add_sum {
-			sum = file_sha256_sum(resolved_p) or { panic(pp.errmsg(err.msg)) }
+			sum = file_sha256_sum(resolved_p) or {
+				panic(pp.errmsg(err.msg))
+			}
 		}
 
 		resolved_annexes << Annex{
@@ -107,11 +121,22 @@ fn main() {
 	}
 
 	mut git := git_build(pp, limit)
-	git.get_remote_info() or { panic(err.msg) }
-	git.gen_changelog(add_descr) or { panic(err.msg) }
-	if add_sum { git.gen_checksum(resolved_annexes) }
+	git.get_remote_info() or {
+		panic(err.msg)
+	}
 
-	release_res, release := git.create_release(gh_token, pre_rel) or { panic(err.msg) }
+	git.gen_changelog(add_descr) or {
+		panic(err.msg)
+	}
+
+	if add_sum {
+		git.gen_checksum(resolved_annexes)
+	}
+
+	release_res, release := git.create_release(gh_token, pre_rel) or {
+		panic(err.msg)
+	}
+
 	if release_res.code != 201 {
 		println(pp.fail('failed'))
 		panic(pp.errmsg('failed with code $release_res.code;\n\n$release_res.body'))

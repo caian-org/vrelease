@@ -43,7 +43,7 @@ mut:
 }
 
 fn git_build(pp PrettyPrint, limit int) Git {
-	return {
+	return Git{
 		pp:      pp,
 		limit:   limit
 		remote:  GitRemote{}
@@ -66,25 +66,35 @@ fn (mut g Git) get_remote_info() ? {
 
 	xtract := fn (g Git, p Protocol, uri string) (string, string) {
 		mf := g.pp.errmsg('malformed remote git URI; got "$uri"')
-		if !uri.contains('/') { panic(mf) }
+		if !uri.contains('/') {
+			panic(mf)
+		}
 
 		mut user := ''
 		mut repo := ''
 
 		if p == Protocol.ssh {
-			if !uri.contains(':') { panic(mf) }
+			if !uri.contains(':') {
+				panic(mf)
+			}
 
 			mut segs := uri.split(':')
-			if segs.len != 2 { panic(mf) }
+			if segs.len != 2 {
+				panic(mf)
+			}
 
 			segs = segs[1].split('/')
-			if segs.len != 2 { panic(mf) }
+			if segs.len != 2 {
+				panic(mf)
+			}
 
 			user = segs[0]
 			repo = segs[1]
 		} else {
 			segs := uri.split('/')
-			if segs.len != 5 { panic(mf) }
+			if segs.len != 5 {
+				panic(mf)
+			}
 
 			user = segs[3]
 			repo = segs[4]
@@ -109,10 +119,15 @@ fn (mut g Git) gen_changelog(with_description bool) ? {
 	g.pp.debug('git_tags_sorted', '${json.encode(res.output)}')
 
 	mut tags := res.output.split('\n')
-	if tags.len <= 1 { panic(nt) }
-	tags.pop()
+	if tags.len <= 1 {
+		panic(nt)
+	}
 
-	if tags[0].trim_space() == '' { panic(nt) }
+	tags.pop()
+	if tags[0].trim_space() == '' {
+		panic(nt)
+	}
+
 	current_ref := tags[0].trim_space()
 	g.pp.debug('git_found_tags', '$tags')
 
@@ -127,7 +142,10 @@ fn (mut g Git) gen_changelog(with_description bool) ? {
 	res = os.execute_or_panic('git log --pretty=oneline ${last_ref}..${current_ref}')
 
 	mut logs := res.output.split('\n')
-	if logs.len <= 1 { panic('no entries') }
+	if logs.len <= 1 {
+		panic('no entries')
+	}
+
 	logs.pop()
 	g.pp.debug('git_logs', '\n$logs')
 
