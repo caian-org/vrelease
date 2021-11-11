@@ -21,7 +21,7 @@ fn build_curl(pp PrettyPrint, url string, filep string) CURLCall {
 		pp:      pp,
 		url:     url,
 		filep:   filep,
-		headers: map{}
+		headers: {}
 	}
 }
 

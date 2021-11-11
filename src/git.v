@@ -47,7 +47,7 @@ fn git_build(pp PrettyPrint, limit int) Git {
 		pp:      pp,
 		limit:   limit
 		remote:  GitRemote{}
-		release: map{}
+		release: {}
 	}
 }
 
@@ -198,7 +198,7 @@ fn (mut g Git) gen_changelog(with_description bool) ? {
 		+ '<ul>$items</ul>'
 
 	g.pp.debug('generated_changelog', '\n$content')
-	g.release = map{
+	g.release = {
 		'content': content,
 		'tag': current_ref,
 		'title': release_title,
