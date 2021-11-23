@@ -30,8 +30,10 @@ build: clean
 debug: VFLAGS += -g -cstrict
 debug: build
 
+.PHONY: release
 release: VFLAGS += -prod -compress -nocolor
 release: build
 
+.PHONY: static
 static: VFLAGS += -cflags '--static'
 static: release
