@@ -2,7 +2,6 @@ module main
 
 import os
 import json
-import time
 
 
 enum Protocol {
@@ -34,8 +33,8 @@ struct ReleaseResponse {
 }
 
 struct Git {
-	pp    PrettyPrint [required]
-	limit int         [required]
+	pp         PrettyPrint [required]
+	limit      int         [required]
 mut:
 	remote     GitRemote
 	release    map[string]string
@@ -226,6 +225,14 @@ fn (g Git) get_call(url string, token string, data string) CURLCall {
 	return call
 }
 
+fn (g Git) get_caller(url string, token string) HTTPCaller {
+	mut caller := build_http_caller(g.pp, url)
+	caller.add_header('Accept', 'application/vnd.github.v3+json')
+	caller.add_header('Authorization', 'token ' + token)
+
+	return caller
+}
+
 fn (g Git) upload_asset(token string, annex Annex) ?CURLResponse {
 	url := 'https://uploads.github.com/repos'
 		+ '/$g.remote.user/$g.remote.repo'
@@ -244,7 +251,7 @@ fn (g Git) upload_asset(token string, annex Annex) ?CURLResponse {
 	return res
 }
 
-fn (mut g Git) create_release(token string, is_pre_release bool) ?(CURLResponse, ReleaseResponse) {
+fn (mut g Git) create_release(token string, is_pre_release bool) ?(HTTPCallerResponse, ReleaseResponse) {
 	g.pp.info_nl('creating release... ')
 	payload := ReleaseBody{
 		target_commitish: 'master'
@@ -260,20 +267,9 @@ fn (mut g Git) create_release(token string, is_pre_release bool) ?(CURLResponse,
 	g.pp.debug('git_release_url', '$url')
 	g.pp.debug('git_release_req_data', '$data')
 
-	tmp_file := os.join_path(os.getwd(), time.now().unix_time_milli().str())
-	os.write_file(tmp_file, data) or {
-		panic(g.pp.errmsg('could not write to "$tmp_file"; got "$err.msg"'))
-	}
-
-	g.pp.debug('release_payload_tmp_file', tmp_file)
-
-	mut req := g.get_call(url, token, tmp_file)
-	res := req.post_json() or {
+	mut req := g.get_caller(url, token)
+	res := req.post_json(data) or {
 		panic(g.pp.errmsg('error while making request; got "$err.msg"'))
-	}
-
-	os.rm(tmp_file) or {
-		panic(g.pp.errmsg('could not remove temp file "$tmp_file"; got "$err.msg"'))
 	}
 
 	g.pp.debug('git_release_res_status_code', '$res.code')
