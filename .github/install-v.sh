@@ -3,7 +3,7 @@
 set -e
 
 VLANG_TARGET_OS=""
-VLANG_VERSION="weekly.2021.14"
+VLANG_VERSION="weekly.2021.46"
 
 case "$OS" in
     macos-latest) VLANG_TARGET_OS="macos" ;;
