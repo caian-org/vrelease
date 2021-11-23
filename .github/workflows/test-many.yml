@@ -26,9 +26,24 @@ jobs:
           wait-interval: 20
           running-workflow-name: wait-build
 
+# # ..........................................................................
+# on-linux:
+#   runs-on: ubuntu-latest
+#   needs: wait-build
+#   steps:
+#     - name: Checkout to vrelease
+#       uses: actions/checkout@v2
+
+#     - name: Prepare and run tests
+#       uses: ./.github/actions/reusable-test-routine
+#       with:
+#         artifact: linux
+#         test-file: do-test.sh
+#         github-token: ${{ secrets.GH_TOKEN }}
+
   # ..........................................................................
-  on-linux:
-    runs-on: ubuntu-latest
+  on-macos:
+    runs-on: macos-latest
     needs: wait-build
     steps:
       - name: Checkout to vrelease
@@ -37,24 +52,9 @@ jobs:
       - name: Prepare and run tests
         uses: ./.github/actions/reusable-test-routine
         with:
-          artifact: linux
+          artifact: macos
           test-file: do-test.sh
           github-token: ${{ secrets.GH_TOKEN }}
-
-# # ..........................................................................
-# on-macos:
-#   runs-on: macos-latest
-#   needs: on-linux
-#   steps:
-#     - name: Checkout to vrelease
-#       uses: actions/checkout@v2
-
-#     - name: Prepare and run tests
-#       uses: ./.github/actions/reusable-test-routine@dev
-#       with:
-#         artifact: macos
-#         test-file: do-test.sh
-#         github-token: ${{ secrets.GH_TOKEN }}
 
 # # ..........................................................................
 # on-windows:
@@ -65,7 +65,7 @@ jobs:
 #       uses: actions/checkout@v2
 
 #     - name: Prepare and run tests
-#       uses: ./.github/actions/reusable-test-routine@dev
+#       uses: ./.github/actions/reusable-test-routine
 #       with:
 #         artifact: windows.exe
 #         test-file: do-test.sh
@@ -85,7 +85,7 @@ jobs:
 #       run: docker build -t vrelease .
 
 #     - name: Prepare and run tests
-#       uses: ./.github/actions/reusable-test-routine@dev
+#       uses: ./.github/actions/reusable-test-routine
 #       with:
 #         artifact: linux
 #         test-file: do-docker-test.sh
