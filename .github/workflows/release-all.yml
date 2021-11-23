@@ -61,10 +61,10 @@ jobs:
           chmod +x vrelease-linux
 
           ./vrelease-linux \
-            --limit 50 \
-            --add-checksum \
-            --attach vrelease-linux \
-            --attach vrelease-macos \
-            --attach vrelease-windows.exe
+            -limit 50 \
+            -add-checksum \
+            -attach vrelease-linux \
+            -attach vrelease-macos \
+            -attach vrelease-windows.exe
         env:
           VRELEASE_AUTH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
