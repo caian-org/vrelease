@@ -90,3 +90,4 @@ jobs:
           artifact: linux
           test-file: do-docker-test.sh
           github-token: ${{ secrets.GH_TOKEN }}
+          retrieve-artifact: false

@@ -33,6 +33,11 @@ inputs:
     type: string
     default: Caian Ertl
 
+  retrieve-artifact:
+    required: false
+    type: boolean
+    default: true
+
 
 runs:
   using: composite
@@ -58,20 +63,28 @@ runs:
       with:
         name: vrelease-${{ github.sha }}-${{ inputs.artifact }}
         workflow: build-many.yml
+      if: ${{ inputs.retrieve-artifact }}
+
+    - name: Prepare artifact
+      run: |
+        mv vrelease-*-${{ inputs.artifact }} vrelease
+        chmod +x vrelease
+      shell: bash
+      if: ${{ inputs.retrieve-artifact }}
 
     - name: Download committer
       run: curl -L -O "${{ inputs.committer }}-${{ inputs.artifact }}"
       shell: bash
 
-    - name: Prepare binaries
+    - name: Prepare committer
       run: |
-        mv vrelease-*-${{ inputs.artifact }} vrelease
         mv committer-${{ inputs.artifact }} committer
-        chmod +x vrelease committer
+        chmod +x committer
       shell: bash
 
     - name: Run tests
       run: |
+        ls -lash
         cp "/tmp/${{ inputs.test-file }}" ./test.sh
         bash test.sh
       shell: bash
