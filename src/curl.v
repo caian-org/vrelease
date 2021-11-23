@@ -42,7 +42,7 @@ fn (c CURLCall) build_cmd() string {
 
 fn (c CURLCall) run(cmd string) ?CURLResponse {
 	res  := os.execute_or_panic(cmd)
-	segs := res.output.trim_space().split('\n')
+	mut segs := res.output.trim_space().split('\n')
 
 	return CURLResponse{
 		code: segs.pop().int()
