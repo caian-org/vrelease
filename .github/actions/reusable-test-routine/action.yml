@@ -63,14 +63,14 @@ runs:
       with:
         name: vrelease-${{ github.sha }}-${{ inputs.artifact }}
         workflow: build-many.yml
-      if: ${{ inputs.retrieve-artifact }}
+      if: ${{ inputs.retrieve-artifact == 'true' }}
 
     - name: Prepare artifact
       run: |
         mv vrelease-*-${{ inputs.artifact }} vrelease
         chmod +x vrelease
       shell: bash
-      if: ${{ inputs.retrieve-artifact }}
+      if: ${{ inputs.retrieve-artifact == 'true' }}
 
     - name: Download committer
       run: curl -L -O "${{ inputs.committer }}-${{ inputs.artifact }}"
