@@ -26,55 +26,55 @@ jobs:
           wait-interval: 20
           running-workflow-name: wait-build
 
-# # ..........................................................................
-# on-linux:
-#   runs-on: ubuntu-latest
-#   needs: wait-build
-#   steps:
-#     - name: Checkout to vrelease
-#       uses: actions/checkout@v2
+  # ..........................................................................
+  on-linux:
+    runs-on: ubuntu-latest
+    needs: wait-build
+    steps:
+      - name: Checkout to vrelease
+        uses: actions/checkout@v2
 
-#     - name: Prepare and run tests
-#       uses: ./.github/actions/reusable-test-routine
-#       with:
-#         artifact: linux
-#         test-file: do-test.sh
-#         github-token: ${{ secrets.GH_TOKEN }}
+      - name: Prepare and run tests
+        uses: ./.github/actions/reusable-test-routine
+        with:
+          artifact: linux
+          test-file: do-test.sh
+          github-token: ${{ secrets.GH_TOKEN }}
 
-# # ..........................................................................
-# on-macos:
-#   runs-on: macos-latest
-#   needs: on-linux
-#   steps:
-#     - name: Checkout to vrelease
-#       uses: actions/checkout@v2
+  # ..........................................................................
+  on-macos:
+    runs-on: macos-latest
+    needs: on-linux
+    steps:
+      - name: Checkout to vrelease
+        uses: actions/checkout@v2
 
-#     - name: Prepare and run tests
-#       uses: ./.github/actions/reusable-test-routine
-#       with:
-#         artifact: macos
-#         test-file: do-test.sh
-#         github-token: ${{ secrets.GH_TOKEN }}
+      - name: Prepare and run tests
+        uses: ./.github/actions/reusable-test-routine
+        with:
+          artifact: macos
+          test-file: do-test.sh
+          github-token: ${{ secrets.GH_TOKEN }}
 
-# # ..........................................................................
-# on-windows:
-#   runs-on: windows-latest
-#   needs: on-macos
-#   steps:
-#     - name: Checkout to vrelease
-#       uses: actions/checkout@v2
+  # ..........................................................................
+  on-windows:
+    runs-on: windows-latest
+    needs: on-macos
+    steps:
+      - name: Checkout to vrelease
+        uses: actions/checkout@v2
 
-#     - name: Prepare and run tests
-#       uses: ./.github/actions/reusable-test-routine
-#       with:
-#         artifact: windows.exe
-#         test-file: do-test.sh
-#         github-token: ${{ secrets.GH_TOKEN }}
+      - name: Prepare and run tests
+        uses: ./.github/actions/reusable-test-routine
+        with:
+          artifact: windows.exe
+          test-file: do-test.sh
+          github-token: ${{ secrets.GH_TOKEN }}
 
   # ..........................................................................
   on-docker:
     runs-on: ubuntu-latest
-    needs: wait-build
+    needs: on-windows
     steps:
       - name: Checkout to vrelease
         uses: actions/checkout@v2
