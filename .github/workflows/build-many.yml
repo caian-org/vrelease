@@ -17,89 +17,88 @@ on:
       - "**.md"
 
 jobs:
-  multi-os:
-    runs-on: ${{ matrix.os }}
+# multi-os:
+#   runs-on: ${{ matrix.os }}
 
-    defaults:
-      run:
-        shell: bash
+#   defaults:
+#     run:
+#       shell: bash
 
-    strategy:
-      matrix:
-        os: [windows-latest]
-        # os: [ubuntu-latest, macos-latest, windows-latest]
+#   strategy:
+#     matrix:
+#       os: [ubuntu-latest, macos-latest, windows-latest]
 
-    steps:
-      - name: Checkout to vrelease
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      - name: Pre-build steps
-        run: |
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then choco install curl; fi
-          if [ "${{ matrix.os }}" = "macos-latest" ];   then gem install bundler;  fi
-          if [ "${{ matrix.os }}" = "macos-latest" ];   then brew install upx; fi
-
-      - name: Environment info
-        run: echo $GITHUB_SHA $GITHUB_REF
-
-      - name: Add V download dir to PATH
-        run: echo "/tmp/v" >> $GITHUB_PATH
-
-      - name: Install V
-        run: time bash "${GITHUB_WORKSPACE}/.github/install-v.sh"
-        env:
-          OS: "${{ matrix.os }}"
-
-      - name: Compile vrelease
-        run: make release
-
-      - name: After build run
-        run: |
-          ./vrelease -h
-          ./vrelease -v
-
-      - name: Rename artifact
-        run: |
-          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-            export ARTIFACT="vrelease-${GITHUB_SHA}-linux"
-          fi
-
-          if [ "${{ matrix.os }}" = "macos-latest" ]; then
-            export ARTIFACT="vrelease-${GITHUB_SHA}-macos"
-          fi
-
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            export ARTIFACT="vrelease-${GITHUB_SHA}-windows.exe"
-          fi
-
-          mv vrelease "$ARTIFACT"
-
-          ls -lash
-          echo "::set-env name=ARTIFACT::${ARTIFACT}"
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: "${{ env.ARTIFACT }}"
-          path: "${{ env.ARTIFACT }}"
-          retention-days: 1
-
-# docker:
-#   runs-on: ubuntu-latest
 #   steps:
 #     - name: Checkout to vrelease
 #       uses: actions/checkout@v2
 #       with:
 #         fetch-depth: 0
 
-#     - name: Build image
-#       run: docker build -t vrelease .
+#     - name: Pre-build steps
+#       run: |
+#         if [ "${{ matrix.os }}" = "windows-latest" ]; then choco install curl; fi
+#         if [ "${{ matrix.os }}" = "macos-latest" ];   then gem install bundler;  fi
+#         if [ "${{ matrix.os }}" = "macos-latest" ];   then brew install upx; fi
+
+#     - name: Environment info
+#       run: echo $GITHUB_SHA $GITHUB_REF
+
+#     - name: Add V download dir to PATH
+#       run: echo "/tmp/v" >> $GITHUB_PATH
+
+#     - name: Install V
+#       run: bash "${GITHUB_WORKSPACE}/.github/install-v.sh"
+#       env:
+#         OS: "${{ matrix.os }}"
+
+#     - name: Compile vrelease
+#       run: make release
 
 #     - name: After build run
 #       run: |
-#         docker run --rm vrelease -h
-#         docker run --rm vrelease -v
+#         ./vrelease -h
+#         ./vrelease -v
+
+#     - name: Rename artifact
+#       run: |
+#         if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+#           export ARTIFACT="vrelease-${GITHUB_SHA}-linux"
+#         fi
+
+#         if [ "${{ matrix.os }}" = "macos-latest" ]; then
+#           export ARTIFACT="vrelease-${GITHUB_SHA}-macos"
+#         fi
+
+#         if [ "${{ matrix.os }}" = "windows-latest" ]; then
+#           export ARTIFACT="vrelease-${GITHUB_SHA}-windows.exe"
+#         fi
+
+#         mv vrelease "$ARTIFACT"
+
+#         ls -lash
+#         echo "::set-env name=ARTIFACT::${ARTIFACT}"
+#       env:
+#         ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
+
+#     - name: Upload artifact
+#       uses: actions/upload-artifact@v2
+#       with:
+#         name: "${{ env.ARTIFACT }}"
+#         path: "${{ env.ARTIFACT }}"
+#         retention-days: 1
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout to vrelease
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Build image
+        run: docker build -t vrelease .
+
+      - name: After build run
+        run: |
+          docker run --rm vrelease -h
+          docker run --rm vrelease -v
