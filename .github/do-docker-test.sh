@@ -6,7 +6,7 @@ run_test() {
     ./committer
     docker run \
         --rm \
-        -e VRELEASE_AUTH_TOKEN="$TOKEN" \
+        -e VRELEASE_AUTH_TOKEN="$VRELEASE_AUTH_TOKEN" \
         -v "${GITHUB_WORKSPACE}:/wd" \
         vrelease $@
     sleep 5

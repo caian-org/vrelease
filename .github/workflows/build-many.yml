@@ -26,7 +26,8 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]
+        # os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
       - name: Checkout to vrelease
@@ -88,18 +89,18 @@ jobs:
           path: "${{ env.ARTIFACT }}"
           retention-days: 1
 
-  docker:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout to vrelease
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+# docker:
+#   runs-on: ubuntu-latest
+#   steps:
+#     - name: Checkout to vrelease
+#       uses: actions/checkout@v2
+#       with:
+#         fetch-depth: 0
 
-      - name: Build image
-        run: docker build -t vrelease .
+#     - name: Build image
+#       run: docker build -t vrelease .
 
-      - name: After build run
-        run: |
-          docker run --rm vrelease -h
-          docker run --rm vrelease -v
+#     - name: After build run
+#       run: |
+#         docker run --rm vrelease -h
+#         docker run --rm vrelease -v

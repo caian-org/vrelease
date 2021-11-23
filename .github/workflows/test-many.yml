@@ -1,6 +1,8 @@
-name: test
+name: test-many
 
 on:
+  workflow_dispatch:
+
   pull_request:
     branches:
       - master
@@ -12,201 +14,79 @@ defaults:
     shell: bash
 
 jobs:
-  # ---------------------------------------------------------------------------
-  on-linux:
+  # ..........................................................................
+  wait-build:
     runs-on: ubuntu-latest
     steps:
       - name: Wait for build to finish
         uses: lewagon/wait-on-check-action@master
         with:
-          ref: "${{ github.event.pull_request.head.sha }}"
-          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          ref: ${{ github.event.pull_request.head.sha }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 20
-          running-workflow-name: on-linux
+          running-workflow-name: wait-build
 
-      - name: Checkout to vrelease
-        uses: actions/checkout@v2
-
-      - name: Get test file
-        run: cp "${GITHUB_WORKSPACE}/.github/do-test.sh" /tmp
-
-      - name: Checkout to playground
-        uses: actions/checkout@v2
-        with:
-          repository: "vrelease/vrtp"
-          fetch-depth: 0
-
-      - name: Configure git
-        run: |
-          git config --global user.email "hi@caian.org"
-          git config --global user.name "Caian R. Ertl"
-
-      - name: Set artifact name
-        run: |
-          echo "::set-env name=ARTIFACT::vrelease-${GITHUB_SHA}-linux"
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
-
-      - name: Download compiled artifact
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          name: "${{ env.ARTIFACT }}"
-          workflow: build-many.yml
-
-      - name: Download committer
-        run: curl -L -O "https://github.com/caian-org/committer/releases/download/v0.3.0/committer-linux"
-
-      - name: Prepare binaries
-        run: |
-          mv vrelease-*-linux vrelease
-          mv committer-linux committer
-          chmod +x vrelease committer
-
-      - name: Run tests
-        run: |
-          cp /tmp/do-test.sh .
-          bash do-test.sh
-        env:
-          VRELEASE_AUTH_TOKEN: "${{ secrets.GH_TOKEN }}"
-
-  # ---------------------------------------------------------------------------
-  on-macos:
-    runs-on: macos-latest
-    needs: on-linux
-    steps:
-      - name: Checkout to vrelease
-        uses: actions/checkout@v2
-
-      - name: Get test file
-        run: cp "${GITHUB_WORKSPACE}/.github/do-test.sh" /tmp
-
-      - name: Checkout to playground
-        uses: actions/checkout@v2
-        with:
-          repository: "vrelease/vrtp"
-          fetch-depth: 0
-
-      - name: Configure git
-        run: |
-          git config --global user.email "hi@caian.org"
-          git config --global user.name "Caian R. Ertl"
-
-      - name: Set artifact name
-        run: |
-          echo "::set-env name=ARTIFACT::vrelease-${GITHUB_SHA}-macos"
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
-
-      - name: Download compiled artifact
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          name: "${{ env.ARTIFACT }}"
-          workflow: build-many.yml
-
-      - name: Download committer
-        run: curl -L -O "https://github.com/caian-org/committer/releases/download/v0.3.0/committer-macos"
-
-      - name: Prepare binaries
-        run: |
-          mv vrelease-*-macos vrelease
-          mv committer-macos committer
-          chmod +x vrelease committer
-
-      - name: Run tests
-        run: |
-          cp /tmp/do-test.sh .
-          bash do-test.sh
-        env:
-          VRELEASE_AUTH_TOKEN: "${{ secrets.GH_TOKEN }}"
-
-  # ---------------------------------------------------------------------------
-  on-windows:
-    runs-on: windows-latest
-    needs: [on-linux, on-macos]
-    steps:
-      - name: Checkout to vrelease
-        uses: actions/checkout@v2
-
-      - name: Get test file
-        run: cp "${GITHUB_WORKSPACE}/.github/do-test.sh" /tmp
-
-      - name: Checkout to playground
-        uses: actions/checkout@v2
-        with:
-          repository: "vrelease/vrtp"
-          fetch-depth: 0
-
-      - name: Configure git
-        run: |
-          git config --global user.email "hi@caian.org"
-          git config --global user.name "Caian R. Ertl"
-
-      - name: Set artifact name
-        run: |
-          echo "::set-env name=ARTIFACT::vrelease-${GITHUB_SHA}-windows.exe"
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
-
-      - name: Download compiled artifact
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          name: "${{ env.ARTIFACT }}"
-          workflow: build-many.yml
-
-      - name: Download committer
-        run: curl -L -O "https://github.com/caian-org/committer/releases/download/v0.3.0/committer-windows.exe"
-
-      - name: Prepare binaries
-        run: |
-          mv vrelease-*-windows.exe vrelease
-          mv committer-windows.exe committer
-          chmod +x vrelease committer
-
-      - name: Run tests
-        run: |
-          cp /tmp/do-test.sh .
-          bash do-test.sh
-        env:
-          VRELEASE_AUTH_TOKEN: "${{ secrets.GH_TOKEN }}"
-
-  # ---------------------------------------------------------------------------
-  on-docker:
+  # ..........................................................................
+  on-linux:
     runs-on: ubuntu-latest
-    needs: [on-linux, on-macos, on-windows]
+    needs: wait-build
     steps:
       - name: Checkout to vrelease
         uses: actions/checkout@v2
+
+      - name: Prepare and run tests
+        uses: ./.github/actions/reusable-test-routine
         with:
-          fetch-depth: 0
+          artifact: linux
+          test-file: do-test.sh
+          github-token: ${{ secrets.GH_TOKEN }}
 
-      - name: Build image
-        run: docker build -t vrelease .
+# # ..........................................................................
+# on-macos:
+#   runs-on: macos-latest
+#   needs: on-linux
+#   steps:
+#     - name: Checkout to vrelease
+#       uses: actions/checkout@v2
 
-      - name: Get test file
-        run: cp "${GITHUB_WORKSPACE}/.github/do-docker-test.sh" /tmp
+#     - name: Prepare and run tests
+#       uses: ./.github/actions/reusable-test-routine@dev
+#       with:
+#         artifact: macos
+#         test-file: do-test.sh
+#         github-token: ${{ secrets.GH_TOKEN }}
 
-      - name: Checkout to playground
-        uses: actions/checkout@v2
-        with:
-          repository: "vrelease/vrtp"
-          fetch-depth: 0
+# # ..........................................................................
+# on-windows:
+#   runs-on: windows-latest
+#   needs: on-macos
+#   steps:
+#     - name: Checkout to vrelease
+#       uses: actions/checkout@v2
 
-      - name: Configure git
-        run: |
-          git config --global user.email "hi@caian.org"
-          git config --global user.name "Caian R. Ertl"
+#     - name: Prepare and run tests
+#       uses: ./.github/actions/reusable-test-routine@dev
+#       with:
+#         artifact: windows.exe
+#         test-file: do-test.sh
+#         github-token: ${{ secrets.GH_TOKEN }}
 
-      - name: Download committer
-        run: curl -L -O "https://github.com/caian-org/committer/releases/download/v0.3.0/committer-linux"
+# # ..........................................................................
+# on-docker:
+#   runs-on: ubuntu-latest
+#   needs: on-windows
+#   steps:
+#     - name: Checkout to vrelease
+#       uses: actions/checkout@v2
+#       with:
+#         fetch-depth: 0
 
-      - name: Prepare binaries
-        run: |
-          mv committer-linux committer
-          chmod +x committer
+#     - name: Build image
+#       run: docker build -t vrelease .
 
-      - name: Run tests
-        run: |
-          cp /tmp/do-docker-test.sh .
-          bash do-docker-test.sh
-        env:
-          TOKEN: "${{ secrets.GH_TOKEN }}"
+#     - name: Prepare and run tests
+#       uses: ./.github/actions/reusable-test-routine@dev
+#       with:
+#         artifact: linux
+#         test-file: do-docker-test.sh
+#         github-token: ${{ secrets.GH_TOKEN }}
