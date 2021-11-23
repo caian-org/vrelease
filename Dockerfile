@@ -1,5 +1,6 @@
 FROM thevlang/vlang:alpine-dev AS base
-MAINTAINER Caian R. Ertl <hi@caian.org>
+LABEL maintainer="Caian Ertl <hi@caian.org>"
+
 RUN apk update && \
     apk add build-base coreutils musl-dev libffi-dev upx && \
     apk del openssl-dev && \
