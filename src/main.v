@@ -73,13 +73,13 @@ fn main() {
 	annexes    := cli.get_annexes()
 
 	pp := PrettyPrint{ debug_mode, no_color }
-	pp.debug('flag_debug_mode', '$debug_mode')
-	pp.debug('flag_no_color', '$no_color')
-	pp.debug('flag_add_checksum', '$add_sum')
+	pp.debug('flag_debug_mode',      '$debug_mode')
+	pp.debug('flag_no_color',        '$no_color')
+	pp.debug('flag_add_checksum',    '$add_sum')
 	pp.debug('flag_add_description', '$add_descr')
-	pp.debug('flag_pre_release', '$pre_rel')
-	pp.debug('flag_limit', '$limit')
-	pp.debug('flag_attach', '$annexes')
+	pp.debug('flag_pre_release',     '$pre_rel')
+	pp.debug('flag_limit',           '$limit')
+	pp.debug('flag_attach',          '$annexes')
 	start_msg(no_color, started_at, meta_d)
 
 	git_bin_path  := check_dependency('git') or {
