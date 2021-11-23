@@ -1,7 +1,9 @@
 FROM thevlang/vlang:alpine-dev AS base
 MAINTAINER Caian R. Ertl <hi@caian.org>
 RUN apk update && \
-    apk add --no-cache git upx
+    apk add build-base coreutils musl-dev libffi-dev upx && \
+    apk del openssl-dev && \
+    apk add libressl-dev
 
 FROM base AS build
 WORKDIR /vr
