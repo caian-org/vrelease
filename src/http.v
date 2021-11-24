@@ -39,9 +39,22 @@ fn (mut h HTTPCaller) post_json(data string) ?HTTPCallerResponse {
 	return HTTPCallerResponse{ res.status_code, res.text }
 }
 
-/*
-fn (mut h HTTPCaller) post_multipart() ?Response {
-	h.headers['Content-Type'] = 'application/octet-stream'
-	return h.run(h.build_cmd())
+fn (mut h HTTPCaller) post_file(a Annex) ?HTTPCallerResponse {
+	data := a.read_data() or { panic(err) }
+
+	c := http.PostMultipartFormConfig{
+		header: h.headers,
+		files: {
+			'asset': [
+				http.FileData{
+					filename: a.filename,
+					content_type: 'application/octet-stream',
+					data: data.bytestr()
+				}
+			]
+		}
+	}
+
+	res := http.post_multipart_form(h.url, c) or { panic(err) }
+	return HTTPCallerResponse{ res.status_code, res.text }
 }
-*/

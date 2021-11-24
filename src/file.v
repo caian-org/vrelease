@@ -10,6 +10,10 @@ struct Annex {
 	checksum string [required]
 }
 
+fn (a Annex) read_data() ?[]byte {
+	return os.read_bytes(a.filepath)
+}
+
 fn file_is_valid(p string) bool {
 	return os.is_file(p) && os.is_readable(p)
 }

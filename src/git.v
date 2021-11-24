@@ -217,14 +217,6 @@ fn (mut g Git) gen_checksum(annexes []Annex) {
 	g.release['content'] += annex_sec
 }
 
-fn (g Git) get_call(url string, token string, data string) CURLCall {
-	mut call := build_curl(g.pp, url, data)
-	call.add_header('Accept', 'application/vnd.github.v3+json')
-	call.add_header('Authorization', 'token ' + token)
-
-	return call
-}
-
 fn (g Git) get_caller(url string, token string) HTTPCaller {
 	mut caller := build_http_caller(g.pp, url)
 	caller.add_header('Accept', 'application/vnd.github.v3+json')
@@ -233,15 +225,15 @@ fn (g Git) get_caller(url string, token string) HTTPCaller {
 	return caller
 }
 
-fn (g Git) upload_asset(token string, annex Annex) ?CURLResponse {
+fn (g Git) upload_asset(token string, annex Annex) ?HTTPCallerResponse {
 	url := 'https://uploads.github.com/repos'
 		+ '/$g.remote.user/$g.remote.repo'
 		+ '/releases/$g.release_id/assets?name=$annex.filename'
 
 	g.pp.debug('git_upload_asset_url', '$url')
 
-	mut req := g.get_call(url, token, annex.filepath)
-	res := req.post_multipart() or {
+	mut req := g.get_caller(url, token)
+	res := req.post_file(annex) or {
 		panic(g.pp.errmsg('error while making request; got "$err.msg"'))
 	}
 
