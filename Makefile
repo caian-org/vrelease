@@ -1,9 +1,9 @@
 .DEFAULT_GOAL := build
 
-N = nimble
-NFLAGS = --verbose -d:ssl
-
 ARTIFACT = vrelease
+
+N = nimble
+NFLAGS = --verbose -o:vrelease -d:ssl
 
 
 clean:
