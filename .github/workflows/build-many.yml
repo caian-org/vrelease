@@ -36,28 +36,21 @@ jobs:
 
       - name: Pre-build steps
         run: |
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then choco install curl; fi
-          if [ "${{ matrix.os }}" = "macos-latest" ];   then gem install bundler;  fi
-          if [ "${{ matrix.os }}" = "macos-latest" ];   then brew install upx; fi
+          gem install bundler
+          brew install upx
+        if: ${{ matrix.os == 'macos-latest' }}
 
-      - name: Environment info
-        run: echo $GITHUB_SHA $GITHUB_REF
-
-      - name: Add V download dir to PATH
-        run: echo "/tmp/v" >> $GITHUB_PATH
-
-      - name: Install V
-        run: bash "${GITHUB_WORKSPACE}/.github/install-v.sh"
-        env:
-          OS: "${{ matrix.os }}"
+      - name: Setup Nim
+        uses: jiro4989/setup-nim-action@v1
+        with:
+          nim-version: '1.6.0'
 
       - name: Compile vrelease
         run: make release
 
       - name: After build run
         run: |
-          ./vrelease -h
-          ./vrelease -v
+          ./vrelease
 
       - name: Rename artifact
         run: |
@@ -100,5 +93,4 @@ jobs:
 
       - name: After build run
         run: |
-          docker run --rm vrelease -h
-          docker run --rm vrelease -v
+          docker run --rm vrelease
