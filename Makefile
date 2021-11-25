@@ -30,6 +30,9 @@ build: clean
 debug: VFLAGS += -g -cstrict
 debug: build
 
+trace: VFLAGS += -d trace_http_request -d trace_http_response
+trace: debug
+
 .PHONY: release
 release: VFLAGS += -prod -compress -nocolor
 release: build
