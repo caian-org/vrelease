@@ -2,8 +2,12 @@
 
 ARTIFACT = vrelease
 
+ifeq ($(OS),Windows_NT)
+	ARTIFACT = vrelease.exe
+endif
+
 N = nimble
-NFLAGS = --verbose -o:vrelease -d:ssl
+NFLAGS = --verbose -o:$(ARTIFACT) -d:ssl
 
 
 clean:
