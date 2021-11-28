@@ -50,6 +50,9 @@ jobs:
         with:
           nim-version: '1.6.0'
 
+      - name: Refresh package list
+        run: nimble refresh
+
       - name: Compile vrelease
         run: make release
 
