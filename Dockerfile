@@ -9,6 +9,7 @@ WORKDIR /vr
 COPY src             /vr/src
 COPY Makefile        /vr
 COPY vrelease.nimble /vr
+RUN nimble refresh
 RUN make release
 
 FROM alpine:3.13 AS plat
