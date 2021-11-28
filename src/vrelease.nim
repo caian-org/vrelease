@@ -1,21 +1,23 @@
 import std/httpclient
 
-import vr/cli
+import vr/cli/parser
+import vr/cli/logger
 
 
 proc main() =
   let userInput = handleUserInput()
 
-  echo userInput.limit
-  echo userInput.attacheables
+  let logger = newLogger(userInput.verbose, userInput.noColor)
+  logger.info($userInput.attacheables)
+
+  # ---
 
   let client = newHttpClient()
 
   let url = "https://caian-org.s3.amazonaws.com/public.gpg"
   let response = client.request(url, httpMethod = HttpGet)
 
-  echo response.code
-
+  logger.info($response.code)
 
 
 when isMainModule:
