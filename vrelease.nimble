@@ -11,3 +11,4 @@ bin           = @["vrelease"]
 # Dependencies
 
 requires "nim >= 1.6.0"
+requires "docopt >= 0.6.8"

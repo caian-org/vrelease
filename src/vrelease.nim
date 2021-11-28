@@ -1,8 +1,22 @@
-import httpclient
+import std/httpclient
 
-let client = newHttpClient()
+import vr/cli
 
-let url = "https://caian-org.s3.amazonaws.com/public.gpg"
-let response = client.request(url, httpMethod = HttpGet)
 
-echo response.body
+proc main() =
+  let userInput = handleUserInput()
+
+  echo userInput.limit
+  echo userInput.attacheables
+
+  let client = newHttpClient()
+
+  let url = "https://caian-org.s3.amazonaws.com/public.gpg"
+  let response = client.request(url, httpMethod = HttpGet)
+
+  echo response.code
+
+
+
+when isMainModule:
+  main()
