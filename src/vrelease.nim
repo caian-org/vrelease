@@ -17,7 +17,7 @@ proc main() =
   let url = "https://caian-org.s3.amazonaws.com/public.gpg"
   let response = client.request(url, httpMethod = HttpGet)
 
-  logger.info($response.code)
+  logger.debug("response_code", $response.code)
 
 
 when isMainModule:

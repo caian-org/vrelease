@@ -1,5 +1,9 @@
+import std/strformat
+import std/strutils
 import std/sugar
 import std/terminal
+
+import ../util/str
 
 
 type
@@ -7,25 +11,39 @@ type
     isVerbose : bool
     noColors  : bool
 
-proc log(g: Logger, msg: string, toStyle: (string) -> string, newLine = true) =
+
+proc log(g: Logger, txt: string, toStyle: (string) -> string, newLine = true) =
   let preffix = "=> "
 
   if g.noColors:
-    stdout.write(preffix, msg)
+    stdout.write(preffix, txt)
   else:
-    stdout.styledWrite(preffix.toStyle(), msg)
+    stdout.styledWrite(preffix.toStyle(), txt)
 
   if newLine:
     stdout.write("\n")
 
+proc info*(g: Logger, txt: string) =
+  g.log(txt, (v: string) => v.toBrightBlueColor())
 
-func toBrightBlue (t: string): string =
-  return ansiForegroundColorCode(fgBlue, bright = true) & t & ansiResetCode
+proc debug*(g: Logger, key: string, txt: string) =
+  let preffix = ["===> ", "[DEBUG] "]
 
+  if not g.isVerbose:
+    return
 
-proc info*(g: Logger, msg: string) =
-  g.log(msg, (v: string) => v.toBrightBlue())
+  if g.noColors:
+    stdout.write(preffix.join(""), &"{key} = {txt}", "\n")
+    return
 
+  stdout.write(
+    preffix[0].toDimStyle(),
+    preffix[1].toBoldStyle(),
+    key,
+    " = ".toBrightRedColor(),
+    txt,
+    "\n"
+  )
 
 proc newLogger*(isVerbose: bool, noColors: bool): Logger =
   return Logger(
