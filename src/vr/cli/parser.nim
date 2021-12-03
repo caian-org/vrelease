@@ -50,12 +50,12 @@ proc die(msg: string) =
   raise newException(Defect, msg)
 
 proc resolveAssetPath(p: string): string =
-  let absolutePath = (if isAbsolute(p): p else: absolutePath(p))
+  let absPath = (if p.isAbsolute(): p else: p.absolutePath())
 
-  if fileExists(absolutePath):
-    return absolutePath
+  if fileExists(absPath):
+    return absPath
 
-  let r = &"'{p}'" & (if p != absolutePath: &" (resolved to '{absolutePath}')" else: "")
+  let r = &"'{p}'" & (if p != absPath: &" (resolved to '{absPath}')" else: "")
   die(&"asset path {r} does not exists")
 
 proc verifyAndParseIntFlag(args: Table[string, Value], flag: string): int =
