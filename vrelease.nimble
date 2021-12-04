@@ -1,8 +1,8 @@
 # Package
 
-version       = "1.0.0"
+version       = "0.4.0"
 author        = "Caian Ertl"
-description   = "A new awesome nimble package"
+description   = "KISS solution to easily create project releases"
 license       = "CC0-1.0"
 srcDir        = "src"
 bin           = @["vrelease"]
