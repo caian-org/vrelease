@@ -6,15 +6,31 @@ ifeq ($(OS),Windows_NT)
 	ARTIFACT = vrelease.exe
 endif
 
-N = nimble
+NC = nimble
 NFLAGS = --verbose -o:$(ARTIFACT) -d:ssl
 
 
 clean:
 	@rm -rf $(ARTIFACT)
 
+write-meta:
+	@nim compile --run --hints:off writemeta.nim
+
 build: clean
-	$(N) build $(NFLAGS)
+	@printf "\nVRELEASE BUILD\n"
+	@printf "\n>>> parameters\n"
+	@printf "* NC: %s (%s)\n" "$(NC)" "$(shell which $(NC))"
+	@printf "* NFLAGS: %s\n" "$(strip $(NFLAGS))"
+	@printf "* PATH:\n" "$(PATH)"
+	@echo "$(PATH)" | tr ':' '\n' | xargs -n 1 printf "   - %s\n"
+	@printf "\n"
+	@printf "\n>>> write-meta\n"
+	@$(MAKE) write-meta
+	@printf "\n>>> compile\n"
+	$(NC) build $(NFLAGS)
+	@printf "\n* binary size: "
+	@du -h $(ARTIFACT) | cut -f -1
+	@printf "\nDONE\n"
 
 release: NFLAGS += -d:release
 release: build

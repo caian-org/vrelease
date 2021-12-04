@@ -1,25 +1,12 @@
-import std/times
 import std/httpclient
-import std/strformat
 import std/strutils
 
+import vr/meta
 import vr/cli/parser
 import vr/cli/logger
-import vr/util/str
-
-
-proc displayStartMessage(noColor: bool, startedAt: string) =
-  var started = &"program has started @ {startedAt}"
-
-  if not noColor:
-    started = started.toDimStyle()
-
-  let m = ["", started, "", ""]
-  stdout.write(m.join("\n"))
 
 
 proc main() =
-  let startedAt = now().format("yyyy-MM-dd HH:mm:ss")
   let userInput = handleUserInput()
 
   let logger = newLogger(userInput.verbose, userInput.noColor)
@@ -31,7 +18,7 @@ proc main() =
   logger.debug("flag_limit",           $userInput.limit)
   logger.debug("flag_attach",          $userInput.attacheables)
 
-  displayStartMessage(userInput.noColor, startedAt)
+  displayStartMessage(userInput.noColor)
 
   # ---
 

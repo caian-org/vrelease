@@ -15,3 +15,9 @@ func toDimStyle*(t: string): string =
 
 func toBoldStyle*(t: string): string =
   return ansiStyleCode(styleBright) & t & ansiResetCode
+
+func first*(t: seq[string]): string =
+  return t[0]
+
+func last*(t: seq[string]): string =
+  return t[-1]
