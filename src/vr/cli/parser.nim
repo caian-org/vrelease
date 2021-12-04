@@ -36,7 +36,7 @@ Options:
 
 
 type
-  UserInput* = object
+  UserInput = object
     limit          *: int
     attacheables   *: seq[string]
     addChecksum    *: bool
