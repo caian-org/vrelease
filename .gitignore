@@ -79,4 +79,11 @@ $RECYCLE.BIN/
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,linux,macos,nim
 
+# program binary
 vrelease
+
+# builder helper binary
+writemeta
+
+# generated meta file
+meta.nim
