@@ -6,9 +6,11 @@ RUN apk update && \
 
 FROM base AS build
 WORKDIR /vr
+COPY .git            /vr/.git
 COPY src             /vr/src
 COPY Makefile        /vr
 COPY vrelease.nimble /vr
+COPY writemeta.nim   /vr
 RUN nimble refresh
 RUN make release
 
