@@ -1,12 +1,14 @@
 import std/osproc
-import std/strformat
+import std/strutils
 
 
-proc execOrPanic*(cmd: string): (string, int) =
+proc execCmd*(cmd: string, panicOnError = true): (string, int) =
   let (output, exitCode) = execCmdEx(cmd)
 
-  if exitCode > 0:
-    let co = if len(output) > 0: &"; got: \n\n{output}" else: ""
-    raise newException(Defect, &"command '{cmd}' failed with return code {exitCode} {co}")
+  if panicOnError and exitCode > 0:
+    let co = if len(output) > 0: format("; got:\n\n$1", output) else: ""
+    let msg = format("command '$1' failed with return code $2", cmd, exitCode) & co
+
+    raise newException(Defect, msg)
 
   return (output, exitCode)

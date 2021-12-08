@@ -27,23 +27,28 @@ func getMeta*(): VReleaseMeta =
     programDescription : "KISS solution to easily create project releases",
     programVersion     : "@programVersion",
     commitHash         : "@commitHash",
-    targetArch         : hostCPU,
-    targetKernel       : hostOS,
-    compilerVersion    : NimVersion,
-    compilationDate    : CompileDate,
-    compilationTime    : CompileTime
+    targetArch         : "@targetArch",
+    targetKernel       : "@targetKernel",
+    compilerVersion    : "@compilerVersion",
+    compilationDate    : "@compilationDate",
+    compilationTime    : "@compilationTime"
   )
 
 func getSignature*(): string =
   let m = getMeta()
-  return &"{m.programName} {m.programVersion} {m.commitHash} - {m.targetKernel}/{m.targetArch}"
+  return fmt"{m.programName} {m.programVersion} {m.commitHash} - {m.targetKernel}/{m.targetArch}"
+
+func getCompilationInfo*(): string =
+  let m = getMeta()
+  return fmt"Compiled with Nim version {m.compilerVersion} @ {m.compilationDate} {m.compilationTime}"
 
 proc displayStartMessage*(noColor: bool) =
-  let startedAt = now().format("yyyy-MM-dd HH:mm:ss")
-  var s = &"program has started @ {startedAt}"
+  var programStarted = "program has started @ " & now().format("yyyy-MM-dd HH:mm:ss")
+  var signature = getSignature()
 
   if not noColor:
-    s = s.toDimStyle()
+    programStarted = programStarted.toDimStyle()
+    signature = signature.toBoldStyle()
 
-  let t = ["", getSignature().toBoldStyle(), s, "", ""]
+  let t = ["", signature, programStarted, "", ""]
   stdout.write(t.join("\n"))
