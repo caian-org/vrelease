@@ -1,13 +1,12 @@
-import std/strformat
-import std/strutils
 import std/sugar
+import std/strutils
 import std/terminal
 
 import ../util/str
 
 
 type
-  Logger = object
+  Logger* = object
     isVerbose : bool
     noColors  : bool
 
@@ -33,17 +32,12 @@ proc debug*(g: Logger, key: string, txt: string) =
     return
 
   if g.noColors:
-    stdout.write(preffix.join(""), &"{key} = {txt}", "\n")
+    stdout.write(preffix.join(""), format("$1 = $2", key, txt), "\n")
     return
 
-  stdout.write(
-    preffix[0].toDimStyle(),
-    preffix[1].toBoldStyle(),
-    key,
-    " = ".toBrightRedColor(),
-    txt,
-    "\n"
-  )
+  let a = preffix[0].toDimStyle()
+  let b = preffix[1].toBoldStyle()
+  stdout.write(a, b, key, " = ".toBrightRedColor(), txt, "\n")
 
 proc newLogger*(isVerbose: bool, noColors: bool): Logger =
   return Logger(

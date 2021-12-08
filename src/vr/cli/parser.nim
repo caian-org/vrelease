@@ -5,6 +5,8 @@ import std/strutils
 
 import docopt
 
+import ../meta
+
 
 const
   flagLimit          = "--limit"
@@ -15,7 +17,7 @@ const
   flagNoColor        = "--no-color"
   flagVerbose        = "--verbose"
 
-const doc = &"""
+const doc = fmt"""
 KISS solution to easily create project releases.
 
 Usage:
@@ -55,20 +57,21 @@ proc resolveAssetPath(p: string): string =
   if fileExists(absPath):
     return absPath
 
-  let r = &"'{p}'" & (if p != absPath: &" (resolved to '{absPath}')" else: "")
-  die(&"asset path {r} does not exists")
+  let r = format("'$1'", p) & (if p != absPath: format(" (resolved to '$1')", absPath) else: "")
+  die(format("asset path $1 does not exists", r))
 
 proc verifyAndParseIntFlag(args: Table[string, Value], flag: string): int =
   if args[flag]:
     try:
       return parseInt($args[flag])
     except ValueError:
-      die(&"flag '{flag}' expects an integer")
+      die(format("flag '$1' expects an integer", flag))
 
   return -1
 
 proc handleUserInput*(): UserInput =
-  let args = docopt(doc, version = "something")
+  let v = [getSignature(), getCompilationInfo()].join("\n")
+  let args = docopt(doc, version = v)
 
   return UserInput(
     limit          : verifyAndParseIntFlag(args, flagLimit),

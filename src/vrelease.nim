@@ -1,10 +1,23 @@
 import std/httpclient
 import std/strutils
+import std/os
 
 import vr/meta
 import vr/cli/parser
 import vr/cli/logger
+import vr/git/program
+import vr/util/command
 
+
+const authTokenEnvKey = "VRELEASE_AUTH_TOKEN"
+
+proc getAuthTokenFromEnv(): (bool, string) =
+  if existsEnv(authTokenEnvKey):
+    let e = getEnv(authTokenEnvKey).strip()
+    if len(e) > 0:
+      return (false, e)
+
+  return (true, "")
 
 proc main() =
   let userInput = handleUserInput()
@@ -20,14 +33,21 @@ proc main() =
 
   displayStartMessage(userInput.noColor)
 
-  # ---
+  let (tokenIsMissing, authToken) = getAuthTokenFromEnv()
+  if tokenIsMissing:
+    raise newException(Defect, format("Authorization token is undefined. Did you forgot to export '$1'?", authTokenEnvKey))
 
-  let client = newHttpClient()
+  let (gitVersion, gitExitCode) = execCmd("git --version", panicOnError = false)
+  if gitExitCode > 0:
+    raise newException(Defect, "Could not find git. Are you sure it is installed and accessible on PATH?")
 
-  let url = "https://caian-org.s3.amazonaws.com/public.gpg"
-  let response = client.request(url, httpMethod = HttpGet)
+  logger.info("Using " & gitVersion.strip())
+  let git = newGitInterface(logger)
 
-  logger.debug("response_code", $response.code)
+  let remotes = git.getRemoteInfo()
+  if len(remotes) == 0:
+    logger.info("Nothing to do, exiting early")
+    return
 
 
 when isMainModule:
