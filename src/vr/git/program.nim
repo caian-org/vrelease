@@ -23,7 +23,7 @@ type
     repository *: string
 
 
-proc newGitInterface* (logger: Logger): Git =
+func newGitInterface* (logger: Logger): Git =
   return Git(logger : logger)
 
 proc parseRemoteUrl (url: string): GitRemote =

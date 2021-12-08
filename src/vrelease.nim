@@ -11,7 +11,7 @@ import vr/util/command
 
 const authTokenEnvKey = "VRELEASE_AUTH_TOKEN"
 
-proc getAuthTokenFromEnv (): (bool, string) =
+func getAuthTokenFromEnv (): (bool, string) =
   if existsEnv(authTokenEnvKey):
     let e = getEnv(authTokenEnvKey).strip()
     if len(e) > 0:

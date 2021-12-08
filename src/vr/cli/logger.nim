@@ -39,7 +39,7 @@ proc debug* (g: Logger, key: string, txt: string) =
   let b = preffix[1].toBoldStyle()
   stdout.write(a, b, key, " = ".toBrightRedColor(), txt, "\n")
 
-proc newLogger* (isVerbose: bool, noColors: bool): Logger =
+func newLogger* (isVerbose: bool, noColors: bool): Logger =
   return Logger(
     isVerbose : isVerbose,
     noColors  : noColors
