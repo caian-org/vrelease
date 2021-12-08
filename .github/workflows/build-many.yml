@@ -58,7 +58,7 @@ jobs:
 
       - name: After build run
         run: |
-          ./vrelease
+          ./vrelease --help
 
       - name: Rename artifact
         run: |
@@ -101,4 +101,4 @@ jobs:
 
       - name: After build run
         run: |
-          docker run --rm vrelease
+          docker run --rm vrelease --help
