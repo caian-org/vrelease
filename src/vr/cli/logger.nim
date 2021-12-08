@@ -11,7 +11,7 @@ type
     noColors  : bool
 
 
-proc log(g: Logger, txt: string, toStyle: (string) -> string, newLine = true) =
+proc log (g: Logger, txt: string, toStyle: (string) -> string, newLine = true) =
   let preffix = "=> "
 
   if g.noColors:
@@ -22,10 +22,10 @@ proc log(g: Logger, txt: string, toStyle: (string) -> string, newLine = true) =
   if newLine:
     stdout.write("\n")
 
-proc info*(g: Logger, txt: string) =
+proc info* (g: Logger, txt: string) =
   g.log(txt, (v: string) => v.toBrightBlueColor())
 
-proc debug*(g: Logger, key: string, txt: string) =
+proc debug* (g: Logger, key: string, txt: string) =
   let preffix = ["===> ", "[DEBUG] "]
 
   if not g.isVerbose:
@@ -39,7 +39,7 @@ proc debug*(g: Logger, key: string, txt: string) =
   let b = preffix[1].toBoldStyle()
   stdout.write(a, b, key, " = ".toBrightRedColor(), txt, "\n")
 
-proc newLogger*(isVerbose: bool, noColors: bool): Logger =
+proc newLogger* (isVerbose: bool, noColors: bool): Logger =
   return Logger(
     isVerbose : isVerbose,
     noColors  : noColors

@@ -7,7 +7,7 @@ import src/vr/util/str
 import src/vr/util/command
 
 
-proc getLastTag(): string =
+proc getLastTag (): string =
   let (output, _) = execCmd("git tag --sort=-creatordate")
   let tags = output.split("\n")
 
@@ -18,7 +18,7 @@ proc getLastTag(): string =
 
   return "UNRELEASED"
 
-proc getLastCommitHash(): string =
+proc getLastCommitHash (): string =
   let (output, _) = execCmd("git rev-parse --short HEAD")
   return output.strip()
 

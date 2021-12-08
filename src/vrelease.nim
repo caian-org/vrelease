@@ -11,7 +11,7 @@ import vr/util/command
 
 const authTokenEnvKey = "VRELEASE_AUTH_TOKEN"
 
-proc getAuthTokenFromEnv(): (bool, string) =
+proc getAuthTokenFromEnv (): (bool, string) =
   if existsEnv(authTokenEnvKey):
     let e = getEnv(authTokenEnvKey).strip()
     if len(e) > 0:
@@ -19,7 +19,7 @@ proc getAuthTokenFromEnv(): (bool, string) =
 
   return (true, "")
 
-proc main() =
+proc main () =
   let userInput = handleUserInput()
 
   let logger = newLogger(userInput.verbose, userInput.noColor)

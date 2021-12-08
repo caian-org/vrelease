@@ -23,18 +23,18 @@ type
     repository *: string
 
 
-proc newGitInterface*(logger: Logger): Git =
+proc newGitInterface* (logger: Logger): Git =
   return Git(logger : logger)
 
-proc parseRemoteUrl(url: string): GitRemote =
+proc parseRemoteUrl (url: string): GitRemote =
   return GitRemote(
-    protocol : GitProtocol.HTTP,
-    uri: url,
-    username: "",
-    repository: "",
+    protocol   : GitProtocol.HTTP,
+    uri        : url,
+    username   : "",
+    repository : "",
   )
 
-proc getRemoteInfo*(g: Git): seq[GitRemote] =
+proc getRemoteInfo* (g: Git): seq[GitRemote] =
   let (gitRemoteRaw, _) = execCmd("git remote get-url --all origin")
   let gitRemotes = gitRemoteRaw.split("\n").mapIt(strip(it)).filterIt(len(it) > 0)
 

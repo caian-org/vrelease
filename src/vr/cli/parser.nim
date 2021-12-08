@@ -48,10 +48,10 @@ type
     verbose        *: bool
 
 
-proc die(msg: string) =
+proc die (msg: string) =
   raise newException(Defect, msg)
 
-proc resolveAssetPath(p: string): string =
+proc resolveAssetPath (p: string): string =
   let absPath = (if p.isAbsolute(): p else: p.absolutePath())
 
   if fileExists(absPath):
@@ -60,7 +60,7 @@ proc resolveAssetPath(p: string): string =
   let r = format("'$1'", p) & (if p != absPath: format(" (resolved to '$1')", absPath) else: "")
   die(format("asset path $1 does not exists", r))
 
-proc verifyAndParseIntFlag(args: Table[string, Value], flag: string): int =
+proc verifyAndParseIntFlag (args: Table[string, Value], flag: string): int =
   if args[flag]:
     try:
       return parseInt($args[flag])
@@ -69,7 +69,7 @@ proc verifyAndParseIntFlag(args: Table[string, Value], flag: string): int =
 
   return -1
 
-proc handleUserInput*(): UserInput =
+proc handleUserInput* (): UserInput =
   let v = [getSignature(), getCompilationInfo()].join("\n")
   let args = docopt(doc, version = v)
 

@@ -2,7 +2,7 @@ import std/osproc
 import std/strutils
 
 
-proc execCmd*(cmd: string, panicOnError = true): (string, int) =
+proc execCmd* (cmd: string, panicOnError = true): (string, int) =
   let (output, exitCode) = execCmdEx(cmd)
 
   if panicOnError and exitCode > 0:

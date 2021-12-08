@@ -21,7 +21,7 @@ type
     compilationTime    *: string
 
 
-func getMeta*(): VReleaseMeta =
+func getMeta* (): VReleaseMeta =
   return VReleaseMeta(
     programName        : "vrelease",
     programDescription : "KISS solution to easily create project releases",
@@ -34,15 +34,15 @@ func getMeta*(): VReleaseMeta =
     compilationTime    : "@compilationTime"
   )
 
-func getSignature*(): string =
+func getSignature* (): string =
   let m = getMeta()
   return fmt"{m.programName} {m.programVersion} {m.commitHash} - {m.targetKernel}/{m.targetArch}"
 
-func getCompilationInfo*(): string =
+func getCompilationInfo* (): string =
   let m = getMeta()
   return fmt"Compiled with Nim version {m.compilerVersion} @ {m.compilationDate} {m.compilationTime}"
 
-proc displayStartMessage*(noColor: bool) =
+proc displayStartMessage* (noColor: bool) =
   var programStarted = "program has started @ " & now().format("yyyy-MM-dd HH:mm:ss")
   var signature = getSignature()
 
