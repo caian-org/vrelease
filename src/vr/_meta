@@ -31,7 +31,7 @@ func getMeta* (): VReleaseMeta =
     targetKernel       : "@targetKernel",
     compilerVersion    : "@compilerVersion",
     compilationDate    : "@compilationDate",
-    compilationTime    : "@compilationTime"
+    compilationTime    : "@compilationTime",
   )
 
 func getSignature* (): string =

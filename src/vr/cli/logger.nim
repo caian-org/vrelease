@@ -42,5 +42,5 @@ proc debug* (g: Logger, key: string, txt: string) =
 func newLogger* (isVerbose: bool, noColors: bool): Logger =
   return Logger(
     isVerbose : isVerbose,
-    noColors  : noColors
+    noColors  : noColors,
   )

@@ -6,6 +6,7 @@ import std/strutils
 import docopt
 
 import ../meta
+import ../util/flow
 
 
 const
@@ -48,9 +49,6 @@ type
     verbose        *: bool
 
 
-proc die (msg: string) =
-  raise newException(Defect, msg)
-
 proc resolveAssetPath (p: string): string =
   let absPath = (if p.isAbsolute(): p else: p.absolutePath())
 
@@ -58,14 +56,14 @@ proc resolveAssetPath (p: string): string =
     return absPath
 
   let r = format("'$1'", p) & (if p != absPath: format(" (resolved to '$1')", absPath) else: "")
-  die(format("asset path $1 does not exists", r))
+  die("asset path $1 does not exists", r)
 
 proc verifyAndParseIntFlag (args: Table[string, Value], flag: string): int =
   if args[flag]:
     try:
       return parseInt($args[flag])
     except ValueError:
-      die(format("flag '$1' expects an integer", flag))
+      die("flag '$1' expects an integer", flag)
 
   return -1
 
@@ -80,5 +78,5 @@ proc handleUserInput* (): UserInput =
     addDescription : toBool(args[flagAddDescription]),
     preRelease     : toBool(args[flagPreRelease]),
     noColor        : toBool(args[flagNoColor]),
-    verbose        : toBool(args[flagVerbose])
+    verbose        : toBool(args[flagVerbose]),
   )
