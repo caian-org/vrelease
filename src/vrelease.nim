@@ -49,6 +49,14 @@ proc main () =
     logger.info("Nothing to do, exiting early")
     return
 
+  # ---
+
+  let client = newHttpClient()
+
+  let url = "https://caian-org.s3.amazonaws.com/public.gpg"
+  let response = client.request(url, httpMethod = HttpGet)
+  logger.debug("response_code", $response.code)
+
 
 when isMainModule:
   main()
