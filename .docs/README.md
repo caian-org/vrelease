@@ -9,12 +9,12 @@
 
 `vrelease` is a lightweight and straightforward release tool for GitHub and
 GitLab. It is packed as a single binary that requires no configuration file and
-weights around 100kb on Linux/MacOS and 300kb on Windows. This tool is also:
+weights under 200kb. This tool is also:
 
-- **Simple.** All required paramenters are detected automatically
-- **Minimal.** Only `git` and `curl` are required for execution
-- **Agnostic.** Idealized as a language independent alternative for [`goreleaser`][goreleaser]
-- **CI/CD ready.** Designed to be integrated in CI/CD pipelines of any provider
+- **Simple:** All required parameters are detected automatically
+- **Minimal:** `git` is the only external program necessary
+- **Agnostic:** Language independent alternative for [`goreleaser`][goreleaser]
+- **CI/CD ready:** Designed to be integrated in CI/CD pipelines of any provider
 
 [gh-build-shield]: https://img.shields.io/github/workflow/status/caian-org/vrelease/build?label=build&logo=github&style=flat-square
 [gh-build-url]: https://github.com/caian-org/vrelease/actions/workflows/build-many.yml
@@ -52,7 +52,9 @@ with changelog.
 
 <br/>
 <p align="center">
-  <a href="https://asciinema.org/a/412861" target="_blank"><img src=".docs/demo.gif" height="400px"></a>
+  <a href="https://asciinema.org/a/412861" target="_blank">
+    <img src=".docs/demo.gif" height="400px">
+  </a>
 </p>
 <br/>
 
@@ -95,20 +97,22 @@ The generated release looks [like this][ex-release]
 
 ```
 
-Usage: vrelease [flags]
+KISS solution to easily create project releases.
 
-KISS solution to easily create project releases
+Usage:
+  vrelease [--verbose] [-cdpn] [-l <size>] [-a <file>]...
+  vrelease -h | --help | --version
 
-Flags:
-  -a  --attach           attaches (uploads) a file to the release
-  -i  --add-description  adds release description from last commit
-  -c  --add-checksum     adds file integrity data (SHA256 checksum)
-  -p  --pre-release      identifies the release as non-production ready
-  -l  --limit            sets a limit to the amount of changelog lines
-  -d  --debug            enables debug mode
-  -n  --no-color         disables output with colors
-  -h  --help             prints help information
-  -v  --version          prints version information
+Options:
+  -l <size>, --limit <size>   Set a limit on changelog lines.
+  -a <file>, --attach <file>  Attach a release asset.
+  -c, --add-checksum          Add a file integrity section.
+  -d, --add-description       Add a release description section.
+  -p, --pre-release           Release as non-production ready.
+  -n, --no-color              Disable terminal output coloring.
+  -h, --help                  Print this help message
+  --version                   Show version information.
+  --verbose                   Increase logging information.
 
 ```
 
@@ -131,15 +135,15 @@ Flags:
 
 You can also build from source:
 
-`vrelease` is implemented in [V][vlang], a language inspired by Golang, Rust
-and Python that compiles to human-readable C. After downloading and installing
-V, use make (see [`Makefile`][makefile]) with `release`:
+`vrelease` is implemented in [Nim][nim], a language inspired by Python, Ada and
+Modula that compiles to C, C++ and JavaScript. After downloading and installing
+Nim, use make (see [`Makefile`][makefile]) with `release`:
 
 ```sh
 make release
 ```
 
-[vlang]: https://github.com/vlang/v
+[nim]: https://github.com/nim-lang/Nim
 [makefile]: https://github.com/vrelease/vrelease/blob/master/Makefile
 
 
