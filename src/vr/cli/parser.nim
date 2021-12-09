@@ -50,13 +50,20 @@ type
 
 
 proc resolveAssetPath (p: string): string =
-  let absPath = (if p.isAbsolute(): p else: p.absolutePath())
+  let absPath = (
+    if p.isAbsolute(): p
+    else: p.absolutePath()
+  )
 
   if fileExists(absPath):
     return absPath
 
-  let r = format("'$1'", p) & (if p != absPath: format(" (resolved to '$1')", absPath) else: "")
-  die("asset path $1 does not exists", r)
+  let r = p & (
+    if p != absPath: format(" (resolved to '$1')", absPath)
+    else: ""
+  )
+
+  die("asset path '$1' does not exists", r)
 
 proc verifyAndParseIntFlag (args: Table[string, Value], flag: string): int =
   if args[flag]:
