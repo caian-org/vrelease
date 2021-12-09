@@ -16,8 +16,14 @@ func toDimStyle* (t: string): string =
 func toBoldStyle* (t: string): string =
   return ansiStyleCode(styleBright) & t & ansiResetCode
 
+func atRelativeIndex* (t: seq[string], i: int): string =
+  if i >= 0:
+    return t[i]
+
+  return t[len(t) + i]
+
 func first* (t: seq[string]): string =
   return t[0]
 
 func last* (t: seq[string]): string =
-  return t[-1]
+  return t[len(t) - 1]
