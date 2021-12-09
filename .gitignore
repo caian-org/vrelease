@@ -1,6 +1,6 @@
 
-# Created by https://www.toptal.com/developers/gitignore/api/windows,macos,linux
-# Edit at https://www.toptal.com/developers/gitignore?templates=windows,macos,linux
+# Created by https://www.toptal.com/developers/gitignore/api/windows,linux,macos,nim
+# Edit at https://www.toptal.com/developers/gitignore?templates=windows,linux,macos,nim
 
 ### Linux ###
 *~
@@ -46,6 +46,11 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+### Nim ###
+nimcache/
+nimblecache/
+htmldocs/
+
 ### Windows ###
 # Windows thumbnail cache files
 Thumbs.db
@@ -72,23 +77,13 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# End of https://www.toptal.com/developers/gitignore/api/windows,macos,linux
+# End of https://www.toptal.com/developers/gitignore/api/windows,linux,macos,nim
 
-
-# binaries for programs and plugins
-main
+# program binary
 vrelease
-vrelease-linux
-vrelease-macos
-vrelease-windows
-*.exe
-*.exe~
-*.so
-*.dylib
-*.dll
 
-# script generated
-meta.v
+# builder helper binary
+writemeta
 
-# debug info
-*.dSYM
+# generated meta file
+meta.nim

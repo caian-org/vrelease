@@ -1,37 +1,38 @@
 .DEFAULT_GOAL := build
 
-VC = v
-VFLAGS = -W -showcc -show-c-output -show-timings
-
-SRC_DIR = src
 ARTIFACT = vrelease
-HERE = $(shell pwd)
+
+ifeq ($(OS),Windows_NT)
+	ARTIFACT = vrelease.exe
+endif
+
+NC = nimble
+NFLAGS = --verbose -o:$(ARTIFACT) -d:ssl
 
 
 clean:
 	@rm -rf $(ARTIFACT)
 
+write-meta:
+	@nim compile --run --hints:off writemeta.nim
+
 build: clean
 	@printf "\nVRELEASE BUILD\n"
 	@printf "\n>>> parameters\n"
-	@printf "* VC: %s (%s)\n" "$(VC)" "$(shell which $(VC))"
-	@printf "* VFLAGS: %s\n" "$(strip $(VFLAGS))"
+	@printf "* NC: %s (%s)\n" "$(NC)" "$(shell which $(NC))"
+	@printf "* NFLAGS: %s\n" "$(strip $(NFLAGS))"
 	@printf "* PATH:\n" "$(PATH)"
 	@echo "$(PATH)" | tr ':' '\n' | xargs -n 1 printf "   - %s\n"
 	@printf "\n"
 	@printf "\n>>> write-meta\n"
-	cd .scripts && $(VC) run write-meta.v
+	@$(MAKE) write-meta
 	@printf "\n>>> compile\n"
-	cd $(HERE) && $(VC) $(VFLAGS) $(SRC_DIR) -o $(ARTIFACT)
+	$(NC) build $(NFLAGS)
 	@printf "\n* binary size: "
 	@du -h $(ARTIFACT) | cut -f -1
 	@printf "\nDONE\n"
 
-debug: VFLAGS += -g -cstrict
-debug: build
-
-release: VFLAGS += -prod -compress -nocolor
+release: NFLAGS += -d:release
 release: build
-
-static: VFLAGS += -cflags '--static'
-static: release
+	@strip $(ARTIFACT)
+	@upx --best --lzma $(ARTIFACT)

@@ -1,0 +1,54 @@
+# >>>>> DO NOT TOUCH IT <<<<<
+
+import std/times
+import std/strutils
+import std/strformat
+import system
+
+import util/str
+
+
+type
+  VReleaseMeta = object
+    programName        *: string
+    programDescription *: string
+    programVersion     *: string
+    commitHash         *: string
+    targetArch         *: string
+    targetKernel       *: string
+    compilerVersion    *: string
+    compilationDate    *: string
+    compilationTime    *: string
+
+
+func getMeta* (): VReleaseMeta =
+  return VReleaseMeta(
+    programName        : "vrelease",
+    programDescription : "KISS solution to easily create project releases",
+    programVersion     : "@programVersion",
+    commitHash         : "@commitHash",
+    targetArch         : "@targetArch",
+    targetKernel       : "@targetKernel",
+    compilerVersion    : "@compilerVersion",
+    compilationDate    : "@compilationDate",
+    compilationTime    : "@compilationTime",
+  )
+
+func getSignature* (): string =
+  let m = getMeta()
+  return fmt"{m.programName} {m.programVersion} {m.commitHash} - {m.targetKernel}/{m.targetArch}"
+
+func getCompilationInfo* (): string =
+  let m = getMeta()
+  return fmt"Compiled with Nim version {m.compilerVersion} @ {m.compilationDate} {m.compilationTime}"
+
+proc displayStartMessage* (noColor: bool) =
+  var programStarted = "program has started @ " & now().format("yyyy-MM-dd HH:mm:ss")
+  var signature = getSignature()
+
+  if not noColor:
+    programStarted = programStarted.toDimStyle()
+    signature = signature.toBoldStyle()
+
+  let t = ["", signature, programStarted, "", ""]
+  stdout.write(t.join("\n"))
