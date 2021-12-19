@@ -2,6 +2,7 @@ import std/sequtils
 import std/strutils
 import std/sugar
 
+import ../fn
 import ../cli/logger
 import ../util/command
 import ../util/flow
@@ -122,6 +123,8 @@ proc parseRemoteUrl (g: Git, i: int, url: string): GitRemote =
     repository : repository,
   )
 
+func newGitInterface* (l: Logger): Git = Git(logger : l)
+
 proc getRemoteInfo* (g: Git): seq[GitRemote] =
   let (gitRemoteRaw, _) = execCmd("git remote get-url --all origin")
   let gitRemotes = gitRemoteRaw.split("\n").mapIt(strip(it)).filterIt(len(it) > 0)
@@ -130,11 +133,4 @@ proc getRemoteInfo* (g: Git): seq[GitRemote] =
   if len(gitRemotes) == 0:
     return @[]
 
-  var r: seq[GitRemote] = @[]
-  for i, url in gitRemotes:
-    r.add(g.parseRemoteUrl(i, url))
-
-  return r
-
-func newGitInterface* (l: Logger): Git =
-  return Git(logger : l)
+  return gitRemotes.mapC((i: int, url: string) => g.parseRemoteUrl(i, url))
