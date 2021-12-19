@@ -1,5 +1,3 @@
-import std/os
-import std/sequtils
 import std/strformat
 import std/strutils
 
@@ -37,7 +35,6 @@ Options:
   {flagVerbose}                   Increase logging information.
 """
 
-
 type
   UserInput = object
     limit          *: int
@@ -48,22 +45,6 @@ type
     noColor        *: bool
     verbose        *: bool
 
-
-proc resolveAssetPath (p: string): string =
-  let absPath = (
-    if p.isAbsolute(): p
-    else: p.absolutePath()
-  )
-
-  if fileExists(absPath):
-    return absPath
-
-  let r = p & (
-    if p != absPath: format(" (resolved to '$1')", absPath)
-    else: ""
-  )
-
-  die("asset path '$1' does not exists", r)
 
 proc verifyAndParseIntFlag (args: Table[string, Value], flag: string): int =
   if args[flag]:
@@ -80,7 +61,7 @@ proc handleUserInput* (): UserInput =
 
   return UserInput(
     limit          : verifyAndParseIntFlag(args, flagLimit),
-    attacheables   : @(args[flagAttach]).mapIt(resolveAssetPath(it)),
+    attacheables   : @(args[flagAttach]),
     addChecksum    : toBool(args[flagAddChecksum]),
     addDescription : toBool(args[flagAddDescription]),
     preRelease     : toBool(args[flagPreRelease]),

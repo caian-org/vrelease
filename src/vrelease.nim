@@ -1,11 +1,13 @@
-import std/httpclient
-import std/strutils
 import std/os
+import std/strutils
+import std/httpclient
 
+import vr/fn
 import vr/meta
 import vr/cli/parser
 import vr/cli/logger
 import vr/git/program
+import vr/util/file
 import vr/util/command
 
 
@@ -18,6 +20,17 @@ func getAuthTokenFromEnv (): (bool, string) =
       return (false, e)
 
   return (true, "")
+
+proc processAttacheables (attacheables: seq[string], addChecksum: bool): seq[Attacheable] =
+  attacheables.mapC(
+    proc (i: int, a: string): Attacheable =
+      echo i
+      let p = resolveAssetPath(a)
+      return Attacheable(
+        filepath : p,
+        hash     : if addChecksum: calculateSHA256ChecksumOf(p) else: ""
+      )
+  )
 
 proc main () =
   let userInput = handleUserInput()
@@ -33,10 +46,10 @@ proc main () =
 
   displayStartMessage(userInput.noColor)
 
-  let (tokenIsMissing, authToken) = getAuthTokenFromEnv()
-  if tokenIsMissing:
-    raise newException(Defect, format("Authorization token is undefined. Did you forgot to export '$1'?", authTokenEnvKey))
+  let attacheables = userInput.attacheables.processAttacheables(addChecksum = userInput.addChecksum)
+  echo attacheables
 
+  # ---
   let (gitVersion, gitExitCode) = execCmd("git --version", panicOnError = false)
   if gitExitCode > 0:
     raise newException(Defect, "Could not find git. Are you sure it is installed and accessible on PATH?")
@@ -44,6 +57,15 @@ proc main () =
   logger.info("Using " & gitVersion.strip())
   let git = newGitInterface(logger)
 
+  # ---
+  let (tokenIsMissing, authToken) = getAuthTokenFromEnv()
+  if tokenIsMissing:
+    raise newException(Defect, format("Authorization token is undefined. Did you forgot to export '$1'?", authTokenEnvKey))
+
+  # ---
+
+
+  # ---
   let remotes = git.getRemoteInfo()
   if len(remotes) == 0:
     logger.info("Nothing to do, exiting early")
