@@ -46,4 +46,4 @@ proc calculateSHA256ChecksumOf* (filepath: string): string =
      bytesRead = f.readBuffer(buffer[0].addr, blockSize)
      setLen(buffer,bytesRead)
 
-   return sha.final().hex()
+   return sha.final().hex().toLowerAscii()

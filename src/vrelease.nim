@@ -1,5 +1,6 @@
 import std/os
 import std/strutils
+import std/sugar
 import std/httpclient
 
 import vr/fn
@@ -21,17 +22,6 @@ func getAuthTokenFromEnv (): (bool, string) =
 
   return (true, "")
 
-proc processAttacheables (attacheables: seq[string], addChecksum: bool): seq[Attacheable] =
-  attacheables.mapC(
-    proc (i: int, a: string): Attacheable =
-      echo i
-      let p = resolveAssetPath(a)
-      return Attacheable(
-        filepath : p,
-        hash     : if addChecksum: calculateSHA256ChecksumOf(p) else: ""
-      )
-  )
-
 proc main () =
   let userInput = handleUserInput()
 
@@ -46,8 +36,19 @@ proc main () =
 
   displayStartMessage(userInput.noColor)
 
-  let attacheables = userInput.attacheables.processAttacheables(addChecksum = userInput.addChecksum)
-  echo attacheables
+  # ---
+  let attacheables = userInput.attacheables.mapC(
+    proc (i: int, a: string): Attacheable =
+      let p = resolveAssetPath(a)
+      let h = if userInput.addChecksum: calculateSHA256ChecksumOf(p) else: ""
+
+      let ns = (t: string) => format("attacheable_$1_$2", t, i + 1)
+      logger.debug(ns("filepath"), p)
+      if userInput.addChecksum:
+        logger.debug(ns("hash"), h)
+
+      return Attacheable(filepath : p, hash : h)
+  )
 
   # ---
   let (gitVersion, gitExitCode) = execCmd("git --version", panicOnError = false)
@@ -61,9 +62,6 @@ proc main () =
   let (tokenIsMissing, authToken) = getAuthTokenFromEnv()
   if tokenIsMissing:
     raise newException(Defect, format("Authorization token is undefined. Did you forgot to export '$1'?", authTokenEnvKey))
-
-  # ---
-
 
   # ---
   let remotes = git.getRemoteInfo()

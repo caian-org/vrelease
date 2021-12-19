@@ -104,17 +104,17 @@ func identifyProviderUserAndRepo (url: string, protocol: GitProtocol): (GitProvi
   return (provider, username, repository)
 
 proc parseRemoteUrl (g: Git, i: int, url: string): GitRemote =
-  let nSuffix = (t: string) => format("$1_$2", t, i + 1)
+  let ns = (t: string) => format("git_remote_$1_$2", t, i + 1)
 
-  g.logger.debug(nSuffix("git_remote_url"), url)
+  g.logger.debug(ns("url"), url)
 
   let protocol = identifyRemoteProtocol(url)
-  g.logger.debug(nSuffix("git_remote_protocol"), format("$1", protocol))
+  g.logger.debug(ns("protocol"), format("$1", protocol))
 
   let (provider, username, repository) = identifyProviderUserAndRepo(url, protocol)
-  g.logger.debug(nSuffix("git_remote_provider"), format("$1", provider))
-  g.logger.debug(nSuffix("git_remote_username"), username)
-  g.logger.debug(nSuffix("git_remote_repository"), repository)
+  g.logger.debug(ns("provider"), format("$1", provider))
+  g.logger.debug(ns("username"), username)
+  g.logger.debug(ns("repository"), repository)
 
   return GitRemote(
     provider   : provider,
@@ -122,8 +122,6 @@ proc parseRemoteUrl (g: Git, i: int, url: string): GitRemote =
     username   : username,
     repository : repository,
   )
-
-func newGitInterface* (l: Logger): Git = Git(logger : l)
 
 proc getRemoteInfo* (g: Git): seq[GitRemote] =
   let (gitRemoteRaw, _) = execCmd("git remote get-url --all origin")
@@ -134,3 +132,5 @@ proc getRemoteInfo* (g: Git): seq[GitRemote] =
     return @[]
 
   return gitRemotes.mapC((i: int, url: string) => g.parseRemoteUrl(i, url))
+
+func newGitInterface* (l: Logger): Git = Git(logger : l)
