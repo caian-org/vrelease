@@ -40,7 +40,7 @@ proc debug* (g: Logger, key: string, txt: string) =
   stdout.write(a, b, key, " = ".toBrightRedColor(), txt, "\n")
 
 func newLogger* (isVerbose: bool, noColors: bool): Logger =
-  return Logger(
+  Logger(
     isVerbose : isVerbose,
     noColors  : noColors,
   )

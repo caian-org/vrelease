@@ -22,7 +22,7 @@ type
 
 
 func getMeta* (): VReleaseMeta =
-  return VReleaseMeta(
+  VReleaseMeta(
     programName        : "vrelease",
     programDescription : "KISS solution to easily create project releases",
     programVersion     : "@programVersion",
