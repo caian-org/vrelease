@@ -2,7 +2,7 @@ import std/sugar
 import std/strutils
 import std/terminal
 
-import ../util/str
+import ../text
 
 
 type
@@ -39,8 +39,17 @@ proc debug* (g: Logger, key: string, txt: string) =
   let b = preffix[1].toBoldStyle()
   stdout.write(a, b, key, " = ".toBrightRedColor(), txt, "\n")
 
-func newLogger* (isVerbose: bool, noColors: bool): Logger =
-  Logger(
+proc getLogger* (isVerbose: bool = false, noColors: bool = false): Logger =
+  var hasBeenInitialized {.global.} = false
+  var logger {.global.}: Logger
+
+  if hasBeenInitialized:
+    return logger
+
+  hasBeenInitialized = true
+  logger = Logger(
     isVerbose : isVerbose,
     noColors  : noColors,
   )
+
+  return logger

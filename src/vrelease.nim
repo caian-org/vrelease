@@ -3,29 +3,54 @@ import std/strutils
 import std/sugar
 import std/httpclient
 
-import vr/fn
 import vr/meta
+import vr/misc
+import vr/attacheable
 import vr/cli/parser
 import vr/cli/logger
 import vr/git/program
-import vr/util/file
-import vr/util/command
 
 
-const authTokenEnvKey = "VRELEASE_AUTH_TOKEN"
+proc checkAndGetAuthToken (): string =
+  const authTokenEnvKey = "VRELEASE_AUTH_TOKEN"
 
-func getAuthTokenFromEnv (): (bool, string) =
   if existsEnv(authTokenEnvKey):
     let e = getEnv(authTokenEnvKey).strip()
     if len(e) > 0:
-      return (false, e)
+      return e
 
-  return (true, "")
+  raise newException(Defect, format("Authorization token is undefined. Did you forgot to export '$1'?", authTokenEnvKey))
+
+proc checkForGit () =
+  let logger = getLogger()
+
+  let (gitVersion, gitExitCode) = execCmd("git --version", panicOnError = false)
+  if gitExitCode > 0:
+    raise newException(Defect, "Could not find git. Are you sure it is installed and accessible on PATH?")
+
+  logger.info("Using " & gitVersion.strip())
+
+
+proc processAttacheables (attacheables: seq[string], addChecksum: bool): seq[Attacheable] =
+  let logger = getLogger()
+
+  return attacheables.mapC(
+    proc (i: int, a: string): Attacheable =
+      let ns = (t: string) => format("attacheable_$1_$2", t, i + 1)
+      let attacheable = newAttacheable(a, addChecksum)
+
+      logger.debug(ns("filepath"), attacheable.filepath)
+
+      if addChecksum:
+        logger.debug(ns("hash"), attacheable.hash)
+
+      return attacheable
+  )
 
 proc main () =
   let userInput = handleUserInput()
 
-  let logger = newLogger(userInput.verbose, userInput.noColor)
+  let logger = getLogger(userInput.verbose, userInput.noColor)
   logger.debug("flag_verbose",         $userInput.verbose)
   logger.debug("flag_no_color",        $userInput.noColor)
   logger.debug("flag_add_checksum",    $userInput.addChecksum)
@@ -35,42 +60,19 @@ proc main () =
   logger.debug("flag_attach",          $userInput.attacheables)
 
   displayStartMessage(userInput.noColor)
+  checkForGit()
 
   # ---
-  let attacheables = userInput.attacheables.mapC(
-    proc (i: int, a: string): Attacheable =
-      let p = resolveAssetPath(a)
-      let h = if userInput.addChecksum: calculateSHA256ChecksumOf(p) else: ""
+  let git = newGitInterface()
+  let authToken = checkAndGetAuthToken()
+  let attacheables = processAttacheables(userInput.attacheables, userInput.addChecksum)
 
-      let ns = (t: string) => format("attacheable_$1_$2", t, i + 1)
-      logger.debug(ns("filepath"), p)
-      if userInput.addChecksum:
-        logger.debug(ns("hash"), h)
-
-      return Attacheable(filepath : p, hash : h)
-  )
-
-  # ---
-  let (gitVersion, gitExitCode) = execCmd("git --version", panicOnError = false)
-  if gitExitCode > 0:
-    raise newException(Defect, "Could not find git. Are you sure it is installed and accessible on PATH?")
-
-  logger.info("Using " & gitVersion.strip())
-  let git = newGitInterface(logger)
-
-  # ---
-  let (tokenIsMissing, authToken) = getAuthTokenFromEnv()
-  if tokenIsMissing:
-    raise newException(Defect, format("Authorization token is undefined. Did you forgot to export '$1'?", authTokenEnvKey))
-
-  # ---
   let remotes = git.getRemoteInfo()
   if len(remotes) == 0:
     logger.info("Nothing to do, exiting early")
     return
 
   # ---
-
   let client = newHttpClient()
 
   let url = "https://caian-org.s3.amazonaws.com/public.gpg"

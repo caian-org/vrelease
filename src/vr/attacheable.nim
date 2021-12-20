@@ -1,7 +1,7 @@
 import std/os
 import std/strutils
 
-import flow
+import misc
 
 import nimSHA2
 
@@ -10,7 +10,8 @@ type Attacheable* = object
   filepath* : string
   hash*     : string
 
-proc resolveAssetPath* (p: string): string =
+
+proc resolvePath* (p: string): string =
   let absPath = (
     if p.isAbsolute(): p
     else: p.absolutePath()
@@ -47,3 +48,9 @@ proc calculateSHA256ChecksumOf* (filepath: string): string =
      setLen(buffer,bytesRead)
 
    return sha.final().hex().toLowerAscii()
+
+proc newAttacheable* (filepath: string, addChecksum: bool = false): Attacheable =
+  let f = resolvePath(filepath)
+  let h = if addChecksum: calculateSHA256ChecksumOf(f) else: ""
+
+  return Attacheable(filepath : f, hash : h)

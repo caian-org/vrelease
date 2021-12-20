@@ -5,7 +5,7 @@ import std/strutils
 import std/strformat
 import system
 
-import util/str
+import text
 
 
 type

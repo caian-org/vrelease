@@ -1,4 +1,5 @@
 import std/osproc
+import std/sugar
 import std/strutils
 
 
@@ -12,3 +13,13 @@ proc execCmd* (cmd: string, panicOnError = true): (string, int) =
     raise newException(Defect, msg)
 
   return (output, exitCode)
+
+proc die* (msg: string, args: varargs[string, `$`]) =
+  raise newException(Defect, format(msg, args))
+
+func mapC* [T, S](vals: seq[T], callback: (i: int, v: T) -> S): seq[S] =
+  var r: seq[S] = @[]
+  for i, val in vals:
+    r.add(callback(i, val))
+
+  return r

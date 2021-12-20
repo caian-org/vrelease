@@ -2,11 +2,9 @@ import std/sequtils
 import std/strutils
 import std/sugar
 
-import ../fn
+import ../text
+import ../misc
 import ../cli/logger
-import ../util/command
-import ../util/flow
-import ../util/str
 
 
 type
@@ -30,8 +28,21 @@ type
     repository *: string
 
 
-proc malformedUrlErr () =
-  die("Malformed git remote URL")
+proc malformedUrlErr () = die("Malformed git remote URL")
+
+func tryToSplit (url: string, sep: string): (string, string) =
+  if not url.contains(sep):
+    malformedUrlErr()
+
+  let segs = url.split(sep)
+  if len(segs) != 2:
+    malformedUrlErr()
+
+  var t = segs.last()
+  if t.endsWith(".git"):
+    t = t.split(".git").first()
+
+  return (segs.first(), t)
 
 func identifyRemoteProtocol (url: string): GitProtocol =
   let u = url.toLower()
@@ -54,20 +65,6 @@ func identifyRemoteProvider (domain: string): GitProvider =
     return GitProvider.GitLab
 
   die(format("Unsupported provider '$1'", domain))
-
-func tryToSplit (url: string, sep: string): (string, string) =
-  if not url.contains(sep):
-    malformedUrlErr()
-
-  let segs = url.split(sep)
-  if len(segs) != 2:
-    malformedUrlErr()
-
-  var t = segs.last()
-  if t.endsWith(".git"):
-    t = t.split(".git").first()
-
-  return (segs.first(), t)
 
 func retrieveFromSshRemote (url: string): (string, string, string) =
   let (sshConn, afterProtocol) = url.tryToSplit(":")
@@ -94,24 +91,19 @@ func retrievefromHttpRemote (url: string): (string, string, string) =
 
   return (domain, username, repository)
 
-func identifyProviderUserAndRepo (url: string, protocol: GitProtocol): (GitProvider, string, string) =
-  let (domain, username, repository) = (
+proc parseRemoteUrl (g: Git, i: int, url: string): GitRemote =
+  let ns = (t: string) => format("git_remote_$1_$2", t, i + 1)
+
+  let protocol = identifyRemoteProtocol(url)
+  g.logger.debug(ns("url"), url)
+  g.logger.debug(ns("protocol"), format("$1", protocol))
+
+  let (remoteDomain, username, repository) = (
     if protocol == GitProtocol.SSH: retrieveFromSshRemote(url)
     else: retrievefromHttpRemote(url)
   )
 
-  let provider = identifyRemoteProvider(domain)
-  return (provider, username, repository)
-
-proc parseRemoteUrl (g: Git, i: int, url: string): GitRemote =
-  let ns = (t: string) => format("git_remote_$1_$2", t, i + 1)
-
-  g.logger.debug(ns("url"), url)
-
-  let protocol = identifyRemoteProtocol(url)
-  g.logger.debug(ns("protocol"), format("$1", protocol))
-
-  let (provider, username, repository) = identifyProviderUserAndRepo(url, protocol)
+  let provider = identifyRemoteProvider(remoteDomain)
   g.logger.debug(ns("provider"), format("$1", provider))
   g.logger.debug(ns("username"), username)
   g.logger.debug(ns("repository"), repository)
@@ -133,4 +125,10 @@ proc getRemoteInfo* (g: Git): seq[GitRemote] =
 
   return gitRemotes.mapC((i: int, url: string) => g.parseRemoteUrl(i, url))
 
-func newGitInterface* (l: Logger): Git = Git(logger : l)
+proc getTags* (g: Git): seq[string] =
+  let (gitTagsRaw, _) = execCmd("git tag --sort=-creatordate")
+  let tags = gitTagsRaw.strip().split("\n")
+
+  return tags.mapIt(it.strip())
+
+proc newGitInterface* (): Git = Git(logger : getLogger())
