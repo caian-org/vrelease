@@ -73,6 +73,8 @@ func retrieveFromSshRemote (url: string): (string, string, string) =
 
   let domain = sshConn.split("@").last()
   let segs = afterProtocol.split("/")
+  if len(segs) < 2:
+    malformedUrlErr()
 
   let
     username   = segs[0]
@@ -83,6 +85,8 @@ func retrieveFromSshRemote (url: string): (string, string, string) =
 func retrievefromHttpRemote (url: string): (string, string, string) =
   let (_, afterProtocol) = url.tryToSplit("://")
   let segs = afterProtocol.split("/")
+  if len(segs) < 3:
+    malformedUrlErr()
 
   let
     domain     = segs[0]
@@ -93,10 +97,12 @@ func retrievefromHttpRemote (url: string): (string, string, string) =
 
 proc parseRemoteUrl (g: Git, i: int, url: string): GitRemote =
   let ns = (t: string) => format("git_remote_$1_$2", t, i + 1)
+  g.logger.debug(ns("url"), url)
+
+  if url.find(" ") >= 0:
+    malformedUrlErr()
 
   let protocol = identifyRemoteProtocol(url)
-  g.logger.debug(ns("url"), url)
-  g.logger.debug(ns("protocol"), format("$1", protocol))
 
   let (remoteDomain, username, repository) = (
     if protocol == GitProtocol.SSH: retrieveFromSshRemote(url)
@@ -104,9 +110,13 @@ proc parseRemoteUrl (g: Git, i: int, url: string): GitRemote =
   )
 
   let provider = identifyRemoteProvider(remoteDomain)
+  g.logger.debug(ns("protocol"), format("$1", protocol))
   g.logger.debug(ns("provider"), format("$1", provider))
   g.logger.debug(ns("username"), username)
   g.logger.debug(ns("repository"), repository)
+
+  if len(username) == 0 or len(repository) == 0:
+    malformedUrlErr()
 
   return GitRemote(
     provider   : provider,
@@ -119,7 +129,8 @@ proc getRemoteInfo* (g: Git): seq[GitRemote] =
   let (gitRemoteRaw, _) = execCmd("git remote get-url --all origin")
   let gitRemotes = gitRemoteRaw.split("\n").mapIt(strip(it)).filterIt(len(it) > 0)
 
-  g.logger.info(format("Found $1 remote(s) for this project", len(gitRemotes)))
+  g.logger.info("found $1 remote(s) for this project", len(gitRemotes))
+
   if len(gitRemotes) == 0:
     return @[]
 
@@ -127,8 +138,14 @@ proc getRemoteInfo* (g: Git): seq[GitRemote] =
 
 proc getTags* (g: Git): seq[string] =
   let (gitTagsRaw, _) = execCmd("git tag --sort=-creatordate")
-  let tags = gitTagsRaw.strip().split("\n")
 
+  let tags = gitTagsRaw.strip().split("\n")
   return tags.mapIt(it.strip())
+
+proc getCommmitsLog* (g: Git, tagFrom: string, tagTo: string): seq[string] =
+  let (gitCommitsRaw, _) = execCmd(format("git log --pretty=oneline $1..$2", tagFrom, tagTo))
+  let commits = gitCommitsRaw.strip().split("\n")
+
+  return commits.mapIt(it.strip())
 
 proc newGitInterface* (): Git = Git(logger : getLogger())

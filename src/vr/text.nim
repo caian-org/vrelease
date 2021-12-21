@@ -11,6 +11,9 @@ func toColor (t: string, color: ForegroundColor, bright: bool): string =
 func toBrightBlueColor* (t: string): string =
   t.toColor(fgBlue, true)
 
+func toBrightCyanColor* (t: string): string =
+  t.toColor(fgCyan, true)
+
 func toBrightRedColor* (t: string): string =
   t.toColor(fgRed, true)
 

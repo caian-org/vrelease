@@ -40,7 +40,7 @@ func getSignature* (): string =
 
 func getCompilationInfo* (): string =
   let m = getMeta()
-  return fmt"Compiled with Nim version {m.compilerVersion} @ {m.compilationDate} {m.compilationTime}"
+  return fmt"compiled with Nim version {m.compilerVersion} @ {m.compilationDate} {m.compilationTime}"
 
 proc displayStartMessage* (noColor: bool) =
   var programStarted = "program has started @ " & now().format("yyyy-MM-dd HH:mm:ss")

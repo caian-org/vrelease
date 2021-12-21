@@ -1,4 +1,5 @@
 import std/sugar
+import std/sequtils
 import std/strutils
 import std/terminal
 
@@ -22,8 +23,13 @@ proc log (g: Logger, txt: string, toStyle: (string) -> string, newLine = true) =
   if newLine:
     stdout.write("\n")
 
-proc info* (g: Logger, txt: string) =
-  g.log(txt, (v: string) => v.toBrightBlueColor())
+proc info* (g: Logger, txt: string, emph: varargs[string, `$`]) =
+  let t = (
+    if len(emph) > 0: format(txt, emph.map((e) => (if g.noColors: e else: e.toBrightCyanColor())))
+    else: txt
+  )
+
+  g.log(t, (v: string) => v.toBrightBlueColor())
 
 proc debug* (g: Logger, key: string, txt: string) =
   let preffix = ["===> ", "[DEBUG] "]
@@ -47,9 +53,6 @@ proc getLogger* (isVerbose: bool = false, noColors: bool = false): Logger =
     return logger
 
   hasBeenInitialized = true
-  logger = Logger(
-    isVerbose : isVerbose,
-    noColors  : noColors,
-  )
+  logger = Logger(isVerbose : isVerbose, noColors : noColors)
 
   return logger
