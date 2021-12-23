@@ -49,7 +49,7 @@ proc processAttacheables* (attacheables: seq[string], addChecksum: bool): seq[At
   )
 
 
-func filterSemver* (tags: seq[string]): seq[string] =
+proc filterSemver* (tags: seq[string]): seq[string] =
   tags.filter(
     proc (t: string): bool =
       try:

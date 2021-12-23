@@ -152,7 +152,7 @@ proc getTags* (g: Git): seq[string] =
   return gitTagsRaw.splitClean()
 
 
-proc getCommmitsLog* (g: Git, tagFrom: string, tagTo: string): seq[GitCommit] =
+proc getCommits* (g: Git, tagFrom: string, tagTo: string): seq[GitCommit] =
   let (gitCommitsRaw, _) = execCmd(format("git log --pretty=oneline $1..$2", tagFrom, tagTo))
   return gitCommitsRaw
     .splitClean()

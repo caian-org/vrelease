@@ -1,12 +1,11 @@
-import std/strutils
-import std/httpclient
-
+import mainimpl
 import vr/meta
+import vr/html
+import vr/helpers
 import vr/cli/parser
 import vr/cli/logger
 import vr/git/program
-
-import mainimpl
+import vr/git/release
 
 
 proc main () =
@@ -30,18 +29,18 @@ proc main () =
   let attacheables = processAttacheables(userInput.attacheables, userInput.addChecksum)
 
   # ---
-  let gitRemotes = git.getRemoteInfo()
-  if len(gitRemotes) == 0:
+  let remotes = git.getRemoteInfo()
+  if len(remotes) == 0:
     logger.info("unable to create releases due to missing git remote; exiting early...")
     return
 
   # ---
-  let gitTags = git.getTags()
-  logger.debug("git_tags", $gitTags)
-  logger.debug("git_tags_count", $len(gitTags))
+  let tags = git.getTags()
+  logger.debug("git_tags", $tags)
+  logger.debug("git_tags_count", $len(tags))
 
   # ---
-  let semverTags = filterSemver(gitTags)
+  let semverTags = filterSemver(tags)
   logger.debug("git_tags_semver", $semverTags)
   logger.debug("git_tags_semver_count", $len(semverTags))
 
@@ -55,16 +54,32 @@ proc main () =
   logger.info("generating changelog from $1 to $2", tagFrom, tagTo)
 
   # ---
-  let changelog = git.getCommmitsLog(tagFrom, tagTo)
-  logger.debug("git_changelog", $changelog)
-  logger.debug("git_changelog_count", $len(changelog))
+  let commits = git.getCommits(tagFrom, tagTo)
+  logger.debug("git_commits", $commits)
+  logger.debug("git_commits_count", $len(commits))
 
   # ---
-  let client = newHttpClient()
+  remotes.foreach(
+    func (remote: GitRemote) =
+      let opts = ReleaseBodyOptions(
+        remote         : remote,
+        commits        : commits,
+        assets         : attacheables,
+        commitLimit    : userInput.limit,
+        addChecksum    : userInput.addChecksum,
+        addDescription : userInput.addDescription,
+      )
 
-  let url = "https://caian-org.s3.amazonaws.com/public.gpg"
-  let response = client.request(url, httpMethod = HttpGet)
-  logger.debug("response_code", $response.code)
+      let release = Release(
+        remote     : remote,
+        token      : authToken,
+        body       : buildHTMLChangelog(opts),
+        assets     : attacheables,
+        preRelease : userInput.preRelease,
+      )
+
+      release.create()
+  )
 
 
 when isMainModule:
