@@ -3,7 +3,7 @@ import std/sequtils
 import std/strutils
 import std/terminal
 
-import ../text
+import ../helpers
 
 
 type

@@ -4,7 +4,7 @@ import std/strutils
 import docopt
 
 import ../meta
-import ../misc
+import ../helpers
 
 
 const

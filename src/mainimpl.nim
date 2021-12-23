@@ -3,8 +3,8 @@ import std/sequtils
 import std/strutils
 import std/sugar
 
-import vr/misc
 import vr/attacheable
+import vr/helpers
 import vr/cli/logger
 
 import semver

@@ -1,7 +1,7 @@
 import std/os
 import std/strutils
 
-import misc
+import helpers
 
 import nimSHA2
 

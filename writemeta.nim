@@ -3,8 +3,7 @@ import std/strformat
 import std/strutils
 import system
 
-import src/vr/text
-import src/vr/misc
+import src/vr/helpers
 
 
 proc getLastTag (): string =

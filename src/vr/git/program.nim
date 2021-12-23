@@ -2,8 +2,7 @@ import std/sequtils
 import std/strutils
 import std/sugar
 
-import ../text
-import ../misc
+import ../helpers
 import ../cli/logger
 
 
