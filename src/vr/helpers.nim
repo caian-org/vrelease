@@ -1,6 +1,7 @@
 import std/osproc
-import std/sugar
+import std/sequtils
 import std/strutils
+import std/sugar
 import std/terminal
 
 
@@ -56,3 +57,10 @@ func mapC* [T, S](vals: seq[T], callback: (i: int, v: T) -> S): seq[S] =
     r.add(callback(i, val))
 
   return r
+
+func splitClean* (text: string, v: string = "\n"): seq[string] =
+  text
+    .strip()
+    .split(v)
+    .mapIt(strip(it))
+    .filterIt(len(it) > 0)

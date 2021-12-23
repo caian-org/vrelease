@@ -1,4 +1,3 @@
-import std/sequtils
 import std/strutils
 import std/sugar
 
@@ -126,7 +125,7 @@ proc parseRemoteUrl (g: Git, i: int, url: string): GitRemote =
 
 proc getRemoteInfo* (g: Git): seq[GitRemote] =
   let (gitRemoteRaw, _) = execCmd("git remote get-url --all origin")
-  let gitRemotes = gitRemoteRaw.split("\n").mapIt(strip(it)).filterIt(len(it) > 0)
+  let gitRemotes = gitRemoteRaw.splitClean()
 
   g.logger.info("found $1 remote(s) for this project", len(gitRemotes))
 
@@ -137,14 +136,10 @@ proc getRemoteInfo* (g: Git): seq[GitRemote] =
 
 proc getTags* (g: Git): seq[string] =
   let (gitTagsRaw, _) = execCmd("git tag --sort=-creatordate")
-
-  let tags = gitTagsRaw.strip().split("\n")
-  return tags.mapIt(it.strip())
+  return gitTagsRaw.splitClean()
 
 proc getCommmitsLog* (g: Git, tagFrom: string, tagTo: string): seq[string] =
   let (gitCommitsRaw, _) = execCmd(format("git log --pretty=oneline $1..$2", tagFrom, tagTo))
-  let commits = gitCommitsRaw.strip().split("\n")
-
-  return commits.mapIt(it.strip())
+  return gitCommitsRaw.splitClean()
 
 proc newGitInterface* (): Git = Git(logger : getLogger())
