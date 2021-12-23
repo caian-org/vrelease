@@ -1,10 +1,10 @@
 import std/strformat
 import std/strutils
 
-import docopt
-
 import ../meta
 import ../helpers
+
+import docopt
 
 
 const
@@ -59,6 +59,10 @@ proc verifyAndParseIntFlag (args: Table[string, Value], flag: string): int =
 proc handleUserInput* (): UserInput =
   let v = [getSignature(), getCompilationInfo()].join("\n")
   let args = docopt(doc, version = v)
+
+  let limit = verifyAndParseIntFlag(args, flagLimit)
+  if limit < 1:
+      die("flag '--limit' must be greater than zero")
 
   return UserInput(
     limit          : verifyAndParseIntFlag(args, flagLimit),
