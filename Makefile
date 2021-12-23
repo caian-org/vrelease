@@ -7,14 +7,14 @@ ifeq ($(OS),Windows_NT)
 endif
 
 NC = nimble
-NFLAGS = --verbose -o:$(ARTIFACT) -d:ssl
+NFLAGS = --verbose --verbosity:2 -o:$(ARTIFACT) -d:ssl
 
 
 clean:
 	@rm -rf $(ARTIFACT)
 
 write-meta:
-	@nim compile --run --hints:off writemeta.nim
+	@nim compile --run --hints:off -d:release writemeta.nim
 
 build: clean
 	@printf "\nVRELEASE BUILD\n"
