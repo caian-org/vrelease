@@ -69,9 +69,24 @@ func mapC* [T, S](vals: seq[T], callback: (i: int, v: T) -> S): seq[S] =
   return r
 
 
+func foreach* [T](vals: seq[T], fn: (v: T) -> void) =
+  for _, val in vals:
+    fn(val)
+
+
 func splitClean* (text: string, v: string = "\n"): seq[string] =
   text
     .strip()
     .split(v)
     .mapIt(strip(it))
     .filterIt(len(it) > 0)
+
+
+func limitTo* [T](vals: seq[T], v: int): seq[T] =
+  if v < 0 or v >= len(vals):
+    return vals
+
+  if v == 0:
+    return @[]
+
+  return vals[0, len(vals) - v - 1]
