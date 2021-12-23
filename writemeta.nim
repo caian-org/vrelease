@@ -8,18 +8,20 @@ import src/vr/helpers
 
 proc getLastTag (): string =
   let (output, _) = execCmd("git tag --sort=-creatordate")
-  let tags = output.split("\n")
+  let tags = output.splitClean()
 
   if len(tags) > 0:
-    let mostRecentTag = tags.first().strip()
+    let mostRecentTag = tags.first()
     if mostRecentTag != "":
       return mostRecentTag
 
   return "UNRELEASED"
 
+
 proc getLastCommitHash (): string =
   let (output, _) = execCmd("git rev-parse --short HEAD")
   return output.strip()
+
 
 proc main() =
   let srcDir = absolutePath(joinPath("src", "vr"))
