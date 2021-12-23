@@ -1,3 +1,4 @@
+import std/sequtils
 import std/strutils
 import std/sugar
 
@@ -24,6 +25,10 @@ type
     protocol   *: GitProtocol
     username   *: string
     repository *: string
+
+  GitCommit* = object
+    sha     *: string
+    message *: string
 
 
 proc malformedUrlErr () = die("Malformed git remote URL")
@@ -147,9 +152,21 @@ proc getTags* (g: Git): seq[string] =
   return gitTagsRaw.splitClean()
 
 
-proc getCommmitsLog* (g: Git, tagFrom: string, tagTo: string): seq[string] =
+proc getCommmitsLog* (g: Git, tagFrom: string, tagTo: string): seq[GitCommit] =
   let (gitCommitsRaw, _) = execCmd(format("git log --pretty=oneline $1..$2", tagFrom, tagTo))
-  return gitCommitsRaw.splitClean()
+  return gitCommitsRaw
+    .splitClean()
+    .map(
+      func (commit: string): GitCommit =
+        if len(commit) < 42:
+          die("got malformed commit from 'git log': " & commit)
+
+        let
+          sha = commit[0 .. 39]
+          msg = commit[41 .. len(commit) - 1]
+
+        return GitCommit(sha : sha, message : msg)
+    )
 
 
 proc newGitInterface* (): Git = Git(logger : getLogger())
