@@ -23,6 +23,7 @@ proc log (g: Logger, txt: string, toStyle: (string) -> string, newLine = true) =
   if newLine:
     stdout.write("\n")
 
+
 proc info* (g: Logger, txt: string, emph: varargs[string, `$`]) =
   let t = (
     if len(emph) > 0: format(txt, emph.map((e) => (if g.noColors: e else: e.toBrightCyanColor())))
@@ -30,6 +31,7 @@ proc info* (g: Logger, txt: string, emph: varargs[string, `$`]) =
   )
 
   g.log(t, (v: string) => v.toBrightBlueColor())
+
 
 proc debug* (g: Logger, key: string, txt: string) =
   let preffix = ["===> ", "[DEBUG] "]
@@ -44,6 +46,7 @@ proc debug* (g: Logger, key: string, txt: string) =
   let a = preffix[0].toDimStyle()
   let b = preffix[1].toBoldStyle()
   stdout.write(a, b, key, " = ".toBrightRedColor(), txt, "\n")
+
 
 proc getLogger* (isVerbose: bool = false, noColors: bool = false): Logger =
   var hasBeenInitialized {.global.} = false

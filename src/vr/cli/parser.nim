@@ -55,6 +55,7 @@ proc verifyAndParseIntFlag (args: Table[string, Value], flag: string): int =
 
   return -1
 
+
 proc handleUserInput* (): UserInput =
   let v = [getSignature(), getCompilationInfo()].join("\n")
   let args = docopt(doc, version = v)

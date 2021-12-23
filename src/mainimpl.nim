@@ -21,6 +21,7 @@ proc checkAndGetAuthToken* (): string =
   let m = format("authorization token is undefined. Did you forgot to export '$1'?", key)
   raise newException(Defect, m)
 
+
 proc checkForGit* () =
   let logger = getLogger()
 
@@ -29,6 +30,7 @@ proc checkForGit* () =
     raise newException(Defect, "could not find git. Are you sure it is installed and accessible on PATH?")
 
   logger.info("Using " & gitVersion.strip())
+
 
 proc processAttacheables* (attacheables: seq[string], addChecksum: bool): seq[Attacheable] =
   let logger = getLogger()
@@ -45,6 +47,7 @@ proc processAttacheables* (attacheables: seq[string], addChecksum: bool): seq[At
 
       return attacheable
   )
+
 
 func filterSemver* (tags: seq[string]): seq[string] =
   tags.filter(

@@ -28,6 +28,7 @@ type
 
 proc malformedUrlErr () = die("Malformed git remote URL")
 
+
 func tryToSplit (url: string, sep: string): (string, string) =
   if not url.contains(sep):
     malformedUrlErr()
@@ -42,6 +43,7 @@ func tryToSplit (url: string, sep: string): (string, string) =
 
   return (segs.first(), t)
 
+
 func identifyRemoteProtocol (url: string): GitProtocol =
   let u = url.toLower()
 
@@ -53,6 +55,7 @@ func identifyRemoteProtocol (url: string): GitProtocol =
 
   return GitProtocol.SSH
 
+
 func identifyRemoteProvider (domain: string): GitProvider =
   let u = domain.toLower()
 
@@ -63,6 +66,7 @@ func identifyRemoteProvider (domain: string): GitProvider =
     return GitProvider.GitLab
 
   die(format("Unsupported provider '$1'", domain))
+
 
 func retrieveFromSshRemote (url: string): (string, string, string) =
   let (sshConn, afterProtocol) = url.tryToSplit(":")
@@ -80,6 +84,7 @@ func retrieveFromSshRemote (url: string): (string, string, string) =
 
   return (domain, username, repository)
 
+
 func retrievefromHttpRemote (url: string): (string, string, string) =
   let (_, afterProtocol) = url.tryToSplit("://")
   let segs = afterProtocol.split("/")
@@ -92,6 +97,7 @@ func retrievefromHttpRemote (url: string): (string, string, string) =
     repository = segs.last()
 
   return (domain, username, repository)
+
 
 proc parseRemoteUrl (g: Git, i: int, url: string): GitRemote =
   let ns = (t: string) => format("git_remote_$1_$2", t, i + 1)
@@ -123,6 +129,7 @@ proc parseRemoteUrl (g: Git, i: int, url: string): GitRemote =
     repository : repository,
   )
 
+
 proc getRemoteInfo* (g: Git): seq[GitRemote] =
   let (gitRemoteRaw, _) = execCmd("git remote get-url --all origin")
   let gitRemotes = gitRemoteRaw.splitClean()
@@ -134,12 +141,15 @@ proc getRemoteInfo* (g: Git): seq[GitRemote] =
 
   return gitRemotes.mapC((i: int, url: string) => g.parseRemoteUrl(i, url))
 
+
 proc getTags* (g: Git): seq[string] =
   let (gitTagsRaw, _) = execCmd("git tag --sort=-creatordate")
   return gitTagsRaw.splitClean()
 
+
 proc getCommmitsLog* (g: Git, tagFrom: string, tagTo: string): seq[string] =
   let (gitCommitsRaw, _) = execCmd(format("git log --pretty=oneline $1..$2", tagFrom, tagTo))
   return gitCommitsRaw.splitClean()
+
 
 proc newGitInterface* (): Git = Git(logger : getLogger())

@@ -34,13 +34,16 @@ func getMeta* (): VReleaseMeta =
     compilationTime    : "@compilationTime",
   )
 
+
 func getSignature* (): string =
   let m = getMeta()
   return fmt"{m.programName} {m.programVersion} {m.commitHash} - {m.targetKernel}/{m.targetArch}"
 
+
 func getCompilationInfo* (): string =
   let m = getMeta()
   return fmt"compiled with Nim version {m.compilerVersion} @ {m.compilationDate} {m.compilationTime}"
+
 
 proc displayStartMessage* (noColor: bool) =
   var programStarted = "program has started @ " & now().format("yyyy-MM-dd HH:mm:ss")

@@ -27,6 +27,7 @@ proc resolvePath* (p: string): string =
 
   die("asset path '$1' does not exists", r)
 
+
 proc calculateSHA256ChecksumOf* (filepath: string): string =
    const blockSize = 8 * 1024
    var bytesRead: int = 0
@@ -48,6 +49,7 @@ proc calculateSHA256ChecksumOf* (filepath: string): string =
      setLen(buffer,bytesRead)
 
    return sha.final().hex().toLowerAscii()
+
 
 proc newAttacheable* (filepath: string, addChecksum: bool = false): Attacheable =
   let f = resolvePath(filepath)
