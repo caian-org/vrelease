@@ -16,7 +16,7 @@ inputs:
   committer:
     required: false
     type: string
-    default: https://github.com/caian-org/committer/releases/download/v0.3.0/committer
+    default: https://github.com/caian-org/committer/releases/download/v0.4.0/committer
 
   vrtp:
     required: false
