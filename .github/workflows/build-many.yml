@@ -56,8 +56,12 @@ jobs:
       - name: Compile vrelease
         run: make release
 
+      - name: Run tests
+        run: make tests
+
       - name: After build run
         run: |
+          ./vrelease --version
           ./vrelease --help
 
       - name: Rename artifact
@@ -101,4 +105,5 @@ jobs:
 
       - name: After build run
         run: |
+          docker run --rm vrelease --version
           docker run --rm vrelease --help
