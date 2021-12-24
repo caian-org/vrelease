@@ -10,6 +10,10 @@ NC = nimble
 NFLAGS = --verbose --verbosity:2 -o:$(ARTIFACT) -d:ssl
 
 
+.PHONY: tests
+tests:
+	@$(NC) tests
+
 clean:
 	@rm -rf $(ARTIFACT)
 

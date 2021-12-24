@@ -87,3 +87,8 @@ writemeta
 
 # generated meta file
 meta.nim
+
+# tests
+tests/*
+!tests/*.nim
+!tests/nim.cfg
