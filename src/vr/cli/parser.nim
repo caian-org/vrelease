@@ -49,7 +49,12 @@ type
 proc verifyAndParseIntFlag (args: Table[string, Value], flag: string): int =
   if args[flag]:
     try:
-      return parseInt($args[flag])
+      let val = parseInt($args[flag])
+      if val < 1:
+          die("flag '$1' must be greater than zero", flag)
+
+      return val
+
     except ValueError:
       die("flag '$1' expects an integer", flag)
 
@@ -59,10 +64,7 @@ proc verifyAndParseIntFlag (args: Table[string, Value], flag: string): int =
 proc handleUserInput* (): UserInput =
   let v = [getSignature(), getCompilationInfo()].join("\n")
   let args = docopt(doc, version = v)
-
   let limit = verifyAndParseIntFlag(args, flagLimit)
-  if limit < 1:
-      die("flag '--limit' must be greater than zero")
 
   return UserInput(
     limit          : verifyAndParseIntFlag(args, flagLimit),
