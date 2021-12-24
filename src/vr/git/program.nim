@@ -1,5 +1,6 @@
 import std/sequtils
 import std/strutils
+import std/strformat
 import std/sugar
 
 import ../helpers
@@ -70,7 +71,7 @@ func identifyRemoteProvider (domain: string): GitProvider =
   if u == "gitlab.com":
     return GitProvider.GitLab
 
-  die(format("Unsupported provider '$1'", domain))
+  die(fmt"Unsupported provider '{domain}'")
 
 
 func retrieveFromSshRemote (url: string): (string, string, string) =
@@ -105,7 +106,7 @@ func retrievefromHttpRemote (url: string): (string, string, string) =
 
 
 proc parseRemoteUrl (g: Git, i: int, url: string): GitRemote =
-  let ns = (t: string) => format("git_remote_$1_$2", t, i + 1)
+  let ns = (t: string) => fmt"git_remote_{t}_{i + 1}"
   g.logger.debug(ns("url"), url)
 
   if url.find(" ") >= 0:
@@ -119,8 +120,8 @@ proc parseRemoteUrl (g: Git, i: int, url: string): GitRemote =
   )
 
   let provider = identifyRemoteProvider(remoteDomain)
-  g.logger.debug(ns("protocol"), format("$1", protocol))
-  g.logger.debug(ns("provider"), format("$1", provider))
+  g.logger.debug(ns("protocol"), fmt"{protocol}")
+  g.logger.debug(ns("provider"), fmt"{provider}")
   g.logger.debug(ns("username"), username)
   g.logger.debug(ns("repository"), repository)
 
@@ -153,7 +154,7 @@ proc getTags* (g: Git): seq[string] =
 
 
 proc getCommits* (g: Git, tagFrom: string, tagTo: string): seq[GitCommit] =
-  let (gitCommitsRaw, _) = execCmd(format("git log --pretty=oneline $1..$2", tagFrom, tagTo))
+  let (gitCommitsRaw, _) = execCmd(fmt"git log --pretty=oneline {tagFrom}..{tagTo}")
   return gitCommitsRaw
     .splitClean()
     .map(

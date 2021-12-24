@@ -1,6 +1,7 @@
 import std/sugar
 import std/sequtils
 import std/strutils
+import std/strformat
 import std/terminal
 
 import ../helpers
@@ -40,7 +41,7 @@ proc debug* (g: Logger, key: string, txt: string) =
     return
 
   if g.noColors:
-    stdout.write(preffix.join(""), format("$1 = $2", key, txt), "\n")
+    stdout.write(preffix.join(""), fmt"{key} = {txt}", "\n")
     return
 
   let a = preffix[0].toDimStyle()

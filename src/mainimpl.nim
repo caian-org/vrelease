@@ -1,6 +1,7 @@
 import std/os
 import std/sequtils
 import std/strutils
+import std/strformat
 import std/sugar
 
 import vr/attacheable
@@ -18,7 +19,7 @@ proc checkAndGetAuthToken* (): string =
     if len(e) > 0:
       return e
 
-  let m = format("authorization token is undefined. Did you forgot to export '$1'?", key)
+  let m = fmt"authorization token is undefined. Did you forgot to export '{key}'?"
   raise newException(Defect, m)
 
 
@@ -37,7 +38,7 @@ proc processAttacheables* (attacheables: seq[string], addChecksum: bool): seq[At
 
   return attacheables.mapC(
     proc (i: int, a: string): Attacheable =
-      let ns = (t: string) => format("attacheable_$1_$2", t, i + 1)
+      let ns = (t: string) => fmt"attacheable_{t}_{i + 1}"
       let attacheable = newAttacheable(a, addChecksum)
 
       logger.debug(ns("filepath"), attacheable.filepath)

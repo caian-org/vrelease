@@ -1,4 +1,5 @@
 import std/os
+import std/strformat
 import std/strutils
 
 import helpers
@@ -21,7 +22,7 @@ proc resolvePath* (p: string): string =
     return absPath
 
   let r = p & (
-    if p != absPath: format(" (resolved to '$1')", absPath)
+    if p != absPath: fmt" (resolved to '{absPath}')"
     else: ""
   )
 
